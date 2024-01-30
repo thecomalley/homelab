@@ -1,9 +1,12 @@
-<mxfile host="app.diagrams.net" modified="2024-01-30T06:08:00.496Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0" version="23.0.2" etag="13iW42pBfyBg9-ifzgJU" type="github">
+<mxfile host="app.diagrams.net" modified="2024-01-30T06:09:35.238Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0" etag="QFU2qeb6v5ZEKz0PlfbU" version="23.0.2" type="github">
   <diagram name="Page-1" id="wtVM0NS1bd9N5h4r4Cxo">
-    <mxGraphModel>
+    <mxGraphModel dx="954" dy="617" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="8NJq31saN1-txMpFWHqS-1" value="unRAID" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/unraid-icon-1024x1024-byszif0v.png;" vertex="1" parent="1">
+          <mxGeometry x="120" y="90" width="90" height="90" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
