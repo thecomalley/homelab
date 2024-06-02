@@ -1,0 +1,4 @@
+- hosts: pi
+  become: true
+  roles:
+    - geerlingguy.docker
