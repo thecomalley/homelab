@@ -22,3 +22,26 @@
       ansible.builtin.apt:
         autoremove: yes
         
+  tasks:
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: opt
+        state: absent
+
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: opt
+      register: output
+
+    - name: Show results
+      ansible.builtin.debug:
+        var: output
+
+    - name: Run `docker compose up` again
+      community.docker.docker_compose_v2:
+        project_src: opt
+      register: output
+
+    - name: Show results
+      ansible.builtin.debug:
+        var: output
