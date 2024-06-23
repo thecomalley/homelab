@@ -3,11 +3,11 @@
   become: true
   vars_files:
     - vars/vault.yml
-  tasks:
-    - name: Tear down existing services
-      community.docker.docker_compose_v2:
-        project_src: srv/docker
-        state: absent
+  tasks:      
+    # - name: Tear down existing services
+    #   community.docker.docker_compose_v2:
+    #     project_src: srv/docker
+    #     state: absent
 
     - name: Create Docker Compose file from Jinja template
       ansible.builtin.template:
