@@ -4,16 +4,31 @@
   vars_files:
     - vars/vault.yml
   tasks:
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: srv/docker
+        state: absent
+
     - name: Create Docker Compose file from Jinja template
       ansible.builtin.template:
         src: docker-compose.yml.j2
-        dest: docker-compose.yml
+        dest: srv/docker/docker-compose.yml
         mode: '0644'
       vars:
         - fr24key: "{{ secret_fr24key }}"
         - readsb_lat: "{{ secret_readsb_lat }}"
         - readsb_lon: "{{ secret_readsb_lon }}" 
- 
+
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: srv/docker
+      register: output
+
+    - name: Show results
+      ansible.builtin.debug:
+        var: output
+
+
   # roles:
   #   - geerlingguy.docker
   # pre_tasks: # runs before the roles
