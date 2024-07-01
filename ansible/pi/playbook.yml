@@ -3,50 +3,60 @@
   become: true
   vars_files:
     - vars/vault.yml
-  tasks:      
-    # - name: Tear down existing services
-    #   community.docker.docker_compose_v2:
-    #     project_src: srv/docker
-    #     state: absent
+  tasks:
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/omadmin
+        state: absent
 
     - name: Create Docker Compose file from Jinja template
       ansible.builtin.template:
         src: docker-compose.yml.j2
-        dest: srv/docker/docker-compose.yml
+        dest: docker-compose.yml
         mode: '0644'
       vars:
-        - fr24key: "{{ secret_fr24key }}"
-        - readsb_lat: "{{ secret_readsb_lat }}"
-        - readsb_lon: "{{ secret_readsb_lon }}" 
+        fr24key: "{{ secret_fr24key }}"
+        readsb_lat: "{{ secret_readsb_lat }}"
+        readsb_lon: "{{ secret_readsb_lon }}"
+        pihole_webpassword: "{{ secret_pihole_webpassword }}"
 
     - name: Create and start services
       community.docker.docker_compose_v2:
-        project_src: srv/docker
-      register: output
+        project_src: /home/omadmin
 
-    - name: Show results
-      ansible.builtin.debug:
-        var: output
+    - name: Prune everything
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        networks: true
+        volumes: true
+        builder_cache: true
 
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: /home/omadmin
+
+    - name: Get info on docker host
+      community.docker.docker_host_info:
 
   # roles:
   #   - geerlingguy.docker
-  # pre_tasks: # runs before the roles
-  #   - name: Perform a dist-upgrade.
-  #     ansible.builtin.apt:
-  #       upgrade: dist
-  #       update_cache: yes
+  pre_tasks: # runs before the roles
+    - name: Perform a dist-upgrade.
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
 
-  #   - name: Check if a reboot is required.
-  #     ansible.builtin.stat:
-  #       path: /var/run/reboot-required
-  #       get_checksum: no
-  #     register: reboot_required_file
+    - name: Check if a reboot is required.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
 
-  #   - name: Reboot the server (if required).
-  #     ansible.builtin.reboot:
-  #     when: reboot_required_file.stat.exists == true
+    - name: Reboot the server (if required).
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists
 
-  #   - name: Remove dependencies that are no longer required.
-  #     ansible.builtin.apt:
-  #       autoremove: yes
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.apt:
+        autoremove: true

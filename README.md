@@ -5,7 +5,7 @@ This repo contains the code I use for deploying and managing my home servers
 
 
 ## Vault
-encrypt: `ansible-vault encrypt foo.yml bar.yml`
+encrypt: `ansible-vault encrypt ansible/pi/vars/vault.yml`
 
 Ansible playbooks primarily run on a schedule via [semaphore](https://github.com/semaphoreui/semaphore) 
 but can also be run locally for testing & validation purposes
@@ -19,6 +19,7 @@ but can also be run locally for testing & validation purposes
 1. `cd ansible/pi`
 2. `ansible-vault decrypt vars/vault.yml`
 3. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
+
 
 ### ansible/g2-mini
 
