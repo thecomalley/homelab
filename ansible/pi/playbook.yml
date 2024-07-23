@@ -2,7 +2,7 @@
   hosts: pi
   become: true
   vars_files:
-    - vars/vault.yml
+    - vars/secrets.yml
   tasks:
     - name: Tear down existing services
       community.docker.docker_compose_v2:
