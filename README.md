@@ -3,6 +3,11 @@ This repo contains the code I use for deploying and managing my home servers
 
 ## Ansible
 
+1. Create a venv `python3.12 -m venv .ansible-venv`
+2. Activate the venv `source .ansible-venv/bin/activate`
+3. Upgrade pip `python3 -m pip install --upgrade pip`
+4. install ansible `python3 -m pip install ansible`
+5. Install dependencies required by the collection `pip3 install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt`
 
 ## Vault
 encrypt: `ansible-vault encrypt ansible/pi/vars/secrets.yml`
@@ -23,7 +28,7 @@ but can also be run locally for testing & validation purposes
 
 ### ansible/g2-mini
 
-1. 
+
 
 ## Authentication to hosts
 1. Create a new ssh key pair on the semaphore container, `ssh-keygen` (may already exists in `~/.ssh/id_rsa`) if not 

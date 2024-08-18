@@ -1,64 +1,64 @@
 ---
 - name: Configure HP G2-Mini
   hosts: all
+  become: true
   tasks:
 
     - name: Update all packages to their latest version
-      become: true
       ansible.builtin.apt:
         name: "*"
         state: latest
 
-    - name: Check if a reboot is needed for Debian and Ubuntu boxes
-      register: reboot_required_file
-      stat: path=/var/run/reboot-required get_md5=no
+    # - name: Check if a reboot is needed for Debian and Ubuntu boxes
+    #   register: reboot_required_file
+    #   stat: path=/var/run/reboot-required get_md5=no
 
-    - name: Reboot the Debian or Ubuntu server
-      become: true
-      reboot:
-        msg: "Reboot initiated by Ansible due to kernel updates"
-        connect_timeout: 5
-        reboot_timeout: 300
-        pre_reboot_delay: 0
-        post_reboot_delay: 30
-        test_command: uptime
-      when: reboot_required_file.stat.exists
+    # - name: Reboot the Debian or Ubuntu server
+    #   become: true
+    #   reboot:
+    #     msg: "Reboot initiated by Ansible due to kernel updates"
+    #     connect_timeout: 5
+    #     reboot_timeout: 300
+    #     pre_reboot_delay: 0
+    #     post_reboot_delay: 30
+    #     test_command: uptime
+    #   when: reboot_required_file.stat.exists
 
-    - name: Unmount NFS volume
-      become: true
-      ansible.posix.mount:
-        src: 10.5.5.100:/mnt/user/media/library
-        path: /mnt/nfs-media
-        opts: rw,hard
-        state: unmounted
-        fstype: nfs
+    # - name: Unmount NFS volume
+    #   become: true
+    #   ansible.posix.mount:
+    #     src: 10.5.5.100:/mnt/user/media/library
+    #     path: /mnt/nfs-media
+    #     opts: rw,hard
+    #     state: unmounted
+    #     fstype: nfs
 
-    - name: Mount NFS volume
-      become: true
-      ansible.posix.mount:
-        src: 10.5.5.100:/mnt/user/media/library
-        path: /mnt/nfs-media
-        opts: rw,hard
-        state: mounted
-        fstype: nfs
+    # - name: Mount NFS volume
+    #   become: true
+    #   ansible.posix.mount:
+    #     src: 10.5.5.100:/mnt/user/media/library
+    #     path: /mnt/nfs-media
+    #     opts: rw,hard
+    #     state: mounted
+    #     fstype: nfs
 
-    - name: Stop docker-compose
-      become: true
-      ansible.builtin.command: docker-compose -f /opt/docker-compose.yml down --remove-orphans
+    # - name: Stop docker-compose
+    #   become: true
+    #   ansible.builtin.command: docker-compose -f /opt/docker-compose.yml down --remove-orphans
 
-    - name: Docker system prune
-      become: true
-      ansible.builtin.command: docker system prune -f
+    # - name: Docker system prune
+    #   become: true
+    #   ansible.builtin.command: docker system prune -f
 
-    - name: Copy docker-compose.yml
-      become: true
-      ansible.builtin.copy:
-        src: docker-compose.yml
-        dest: /opt/docker-compose.yml
-        owner: root
-        group: root
-        mode: "0644"
+    # - name: Copy docker-compose.yml
+    #   become: true
+    #   ansible.builtin.copy:
+    #     src: docker-compose.yml
+    #     dest: /opt/docker-compose.yml
+    #     owner: root
+    #     group: root
+    #     mode: "0644"
 
-    - name: Run docker-compose --force-recreate
-      become: true
-      ansible.builtin.command: docker-compose -f /opt/docker-compose.yml up -d
+    # - name: Run docker-compose --force-recreate
+    #   become: true
+    #   ansible.builtin.command: docker-compose -f /opt/docker-compose.yml up -d

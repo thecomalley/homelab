@@ -1,3 +1,6 @@
 *.retry
 
 .DS_store
+
+.venv
+.ansible-venv
