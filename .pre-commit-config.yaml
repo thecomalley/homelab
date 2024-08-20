@@ -5,5 +5,5 @@ repos:
         name: Check Ansible Vault Encryption
         entry: bash check_ansible_vault.sh
         language: system
-        files: '.*\.yml$'
+        files: '^secrets\.yml$|.*/vars/.*\.yml$'
         stages: [commit]

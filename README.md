@@ -22,7 +22,7 @@ but can also be run locally for testing & validation purposes
 
 ### ansible/pi
 1. `cd ansible/pi`
-2. `ansible-vault decrypt vars/vault.yml`
+2. `ansible-vault decrypt vars/secrets.yml`
 3. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
 
 
