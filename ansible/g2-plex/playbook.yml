@@ -1,0 +1,76 @@
+---
+- name: Configure G2-Plex
+  hosts: all
+  become: true
+  vars_files:
+    - vars/secrets.yml
+  pre_tasks:
+    - name: Perform a dist-upgrade.
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+
+    - name: Check if a reboot is required.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
+
+    - name: Reboot the server (if required).
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists
+
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.apt:
+        autoremove: true
+
+  tasks:
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/omadmin
+        state: absent
+
+    - name: Unmount NFS volume
+      become: true
+      ansible.posix.mount:
+        src: 10.5.5.100:/mnt/user/media/library
+        path: /mnt/nfs-media
+        opts: rw,hard
+        state: unmounted
+        fstype: nfs
+
+    - name: Create Docker Compose file from Jinja template
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: docker-compose.yml
+        mode: '0644'
+      vars:
+        plex_claim: "{{ secret_plex_claim }}"
+
+    - name: Mount NFS volume
+      become: true
+      ansible.posix.mount:
+        src: 10.5.5.100:/mnt/user/media/library
+        path: /mnt/nfs-media
+        opts: rw,hard
+        state: mounted
+        fstype: nfs
+
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: /home/omadmin
+
+    - name: Prune everything
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        networks: true
+        volumes: true
+        builder_cache: true
+
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: /home/omadmin
+
+    - name: Get info on docker host
+      community.docker.docker_host_info:

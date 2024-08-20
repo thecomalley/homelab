@@ -1,5 +1,11 @@
 # Homelab
+
 This repo contains the code I use for deploying and managing my home servers
+
+| System         | Hardware | Purpose | Config Management |
+| -------------- | -------- | ------- | ----------------- |
+| Home Assistant | G2 Mini  |
+
 
 ## Ansible
 
