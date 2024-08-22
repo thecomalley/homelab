@@ -1,7 +1,13 @@
-# ansible/g2-mini
+# G2-Plex 
+> HP EliteDesk 800 Mini
 
-## Running Locally 
+This system runs plex standalone from the NAS primarily to leverage QuickSync for transcoding
 
-1. `cd ansible/g2-mini`
-2. `ansible-vault decrypt vars/secrets.yml`
-3. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
+## Ansible - Running Locally 
+
+1. `ansible-vault decrypt vars/secrets.yml`
+2. run `ansible-playbook -i hosts.yml playbook.yml --ask-become-pass` 
+
+## Ansible - Schedule
+
+Runs on a schedule via [semaphore](https://github.com/semaphoreui/semaphore)

@@ -59,6 +59,7 @@
     - name: Create and start services
       community.docker.docker_compose_v2:
         project_src: /home/omadmin
+        pull: "always"
 
     - name: Prune everything
       community.docker.docker_prune:

@@ -1,7 +1,13 @@
-# ansible/pi
+# pidar 
+> Raspberry Pi 3+
 
-## Running Locally 
+This system runs pi-hole and an ADS-B receiver
 
-1. `cd ansible/pi`
-2. `ansible-vault decrypt vars/secrets.yml`
-3. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
+## Ansible - Running Locally 
+
+1. `ansible-vault decrypt vars/secrets.yml`
+2. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
+
+## Ansible - Schedule
+
+Runs on a schedule via [semaphore](https://github.com/semaphoreui/semaphore)
