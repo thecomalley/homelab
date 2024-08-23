@@ -10,4 +10,4 @@ This system runs plex standalone from the NAS primarily to leverage QuickSync fo
 
 ## Ansible - Schedule
 
-Runs on a schedule via [semaphore](https://github.com/semaphoreui/semaphore)
+Runs on a schedule via [semaphore](https://semaphoreui.com/)

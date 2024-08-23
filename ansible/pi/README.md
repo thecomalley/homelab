@@ -10,4 +10,4 @@ This system runs pi-hole and an ADS-B receiver
 
 ## Ansible - Schedule
 
-Runs on a schedule via [semaphore](https://github.com/semaphoreui/semaphore)
+Runs on a schedule via [semaphore](https://semaphoreui.com/)
