@@ -1,6 +1,6 @@
 ---
 - name: Configure G2-Plex
-  hosts: all
+  hosts: g2-plex
   become: true
   vars_files:
     - vars/secrets.yml
