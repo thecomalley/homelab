@@ -42,9 +42,9 @@
   # roles:
   #   - geerlingguy.docker
   pre_tasks: # runs before the roles
-    - name: Perform a dist-upgrade.
+    - name: Perform a apt-get update
       ansible.builtin.apt:
-        upgrade: dist
+        upgrade: "yes"
         update_cache: true
 
     - name: Check if a reboot is required.

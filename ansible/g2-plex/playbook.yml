@@ -5,9 +5,9 @@
   vars_files:
     - vars/secrets.yml
   pre_tasks:
-    - name: Perform a dist-upgrade.
+    - name: Perform a apt-get update
       ansible.builtin.apt:
-        upgrade: dist
+        upgrade: "yes"
         update_cache: true
 
     - name: Check if a reboot is required.

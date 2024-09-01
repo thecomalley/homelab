@@ -5,6 +5,7 @@ This system runs pi-hole and an ADS-B receiver
 
 ## Ansible - Running Locally 
 
+1. `cd ansible/pi`
 1. `ansible-vault decrypt vars/secrets.yml`
 2. run `ansible-playbook -i hosts.yml playbook.yml` to deploy the pi
 
