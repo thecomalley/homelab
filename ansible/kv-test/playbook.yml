@@ -2,8 +2,6 @@
 - name: Playbook to test looking up secrets from Azure KeyVault
   hosts: localhost
   gather_facts: no
-  vars:
-    ansible_python_interpreter: /Users/chrisomalley/.pyenv/versions/3.9.16/bin/python
   tasks:
   - name: print the path of the python interpreter
     debug:
