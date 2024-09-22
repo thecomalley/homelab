@@ -1,0 +1,20 @@
+---
+- name: Playbook to test looking up secrets from Azure KeyVault
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /Users/chrisomalley/.pyenv/versions/3.9.16/bin/python
+  tasks:
+  - name: print the path of the python interpreter
+    debug:
+      var: ansible_playbook_python
+
+  - name: Get latest version of specific secret
+    azure.azcollection.azure_rm_keyvaultsecret_info:
+      vault_uri: "https://lara-iac-devops-kv-969.vault.azure.net"
+      name: something
+    register: secret_info
+
+  - name: Output the retrieved secret
+    debug:
+      var: secret_info.secrets[0].secret
