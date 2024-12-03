@@ -1,24 +1,9 @@
-<mxfile host="app.diagrams.net" modified="2024-01-30T06:12:51.496Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0" etag="eEFWtq3CL-FeHCSR_V38" version="23.0.2" type="github">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0" version="25.0.1">
   <diagram name="Page-1" id="wtVM0NS1bd9N5h4r4Cxo">
-    <mxGraphModel dx="1122" dy="726" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2024" dy="1129" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="8NJq31saN1-txMpFWHqS-1" value="unRAID" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://static-00.iconduck.com/assets.00/unraid-icon-1024x1024-byszif0v.png;" vertex="1" parent="1">
-          <mxGeometry x="120" y="240" width="80" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="8NJq31saN1-txMpFWHqS-2" value="Hour of Power" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/compute/Function_Apps.svg;" vertex="1" parent="1">
-          <mxGeometry x="480" y="40" width="68" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="8NJq31saN1-txMpFWHqS-3" value="backups" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/storage/Storage_Accounts.svg;" vertex="1" parent="1">
-          <mxGeometry x="600" y="160" width="65" height="52" as="geometry" />
-        </mxCell>
-        <mxCell id="8NJq31saN1-txMpFWHqS-5" value="Home Assistant" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Home_Assistant_Logo.svg/2048px-Home_Assistant_Logo.svg.png;" vertex="1" parent="1">
-          <mxGeometry x="280" y="235" width="90" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="8NJq31saN1-txMpFWHqS-6" value="" style="image;sketch=0;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/mscae/Docker.svg;" vertex="1" parent="1">
-          <mxGeometry x="430" y="245" width="97.56" height="80" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
