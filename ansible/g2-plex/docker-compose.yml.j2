@@ -56,8 +56,8 @@ services:
       - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
       - "80:80/tcp"
     environment:
-      TZ: 'Pacific/Auckland'
-      WEBPASSWORD: '{{ pihole_webpassword }}'
+      - TZ=Auckland/Pacific
+      - WEBPASSWORD={{ pihole_webpassword }}
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
