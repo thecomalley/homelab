@@ -2,12 +2,6 @@
 - name: Copy proxy-conf sample files to new config and update DNS records
   hosts: unRAID
   vars:
-    cloudflare_zone: malleynet.xyz
-    services:
-      - radarr
-      - sonarr
-      - frigate
-      # Add more services here as needed
     remote_conf_path: /mnt/user/appdata/swag/nginx/proxy-confs
     local_conf_path: proxy-confs  # Path on localhost where custom confs are stored
   tasks:
@@ -32,21 +26,3 @@
         remote_src: true
       when: not item.stat.exists
       loop: "{{ stat_results.results }}"
-
-    - name: Retrieve public IP address
-      ansible.builtin.uri:
-        url: http://api.ipify.org?format=json
-        method: GET
-        return_content: true
-      register: ip_response
-      delegate_to: localhost
-
-    - name: Create a Cloudflare DNS record for each service
-      community.general.cloudflare_dns:
-        zone: "{{ cloudflare_zone }}"
-        record: "{{ item }}.{{ cloudflare_zone }}"
-        type: A
-        value: "{{ ip_response.json.ip }}"
-        proxied: true
-      with_items: "{{ services }}"
-      delegate_to: localhost

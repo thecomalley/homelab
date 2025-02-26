@@ -4,7 +4,7 @@ I maintain a personal repo for managing and deploying home servers, along with i
 
 - [Malleynet - Homelab](#malleynet---homelab)
   - [OnPrem](#onprem)
-  - [Azure](#azure)
+    - [Workloads](#workloads)
 
 ## OnPrem
 
@@ -16,8 +16,14 @@ I maintain a personal repo for managing and deploying home servers, along with i
 | [g2-plex](./ansible/g2-plex/README.md) | HP EliteDesk 800 Mini | QuickSync Plex Server   | Ansible    |
 
 
-## Azure 
+### Workloads
 
-| Service                 | Link                                                    |
-| ----------------------- | ------------------------------------------------------- |
-| hour-of-power-optimiser | https://github.com/thecomalley/hour-of-power-optimiser/ |
+| Workload Name           | Description | Cloud  | Link                                                   |
+| ----------------------- | ----------- | ------ | ------------------------------------------------------ |
+| Hour of Power Optimiser | Workload -  | Azure  | https://github.com/thecomalley/hour-of-power-optimiser |
+| Azure Alert Parser      |             | Azure  | https://github.com/thecomalley/azure-alert-processor   |
+| Plex                    |             | OnPrem |
+
+
+
+esphome-heatpump-office
