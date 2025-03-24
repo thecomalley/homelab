@@ -47,18 +47,13 @@ services:
       - /opt/plex-meta-manager:/config
     restart: unless-stopped
 
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
+  adguardhome:
+    image: adguard/adguardhome
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
-      - "80:80/tcp"
-    environment:
-      - TZ=Auckland/Pacific
-      - WEBPASSWORD={{ secret_pihole_webpassword }}
+      - 53:53/tcp # plain dns over tcp
+      - 53:53/udp # plain dns over udp
+      - 80:80/tcp # http web interface
+      - 3000:3000/tcp # initial setup web interface
     volumes:
-      - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
-    restart: unless-stopped
+      - opt/adguardhome/conf:/opt/adguardhome/conf # app configuration
+      - opt/adguardhome/work:/opt/adguardhome/work # app working directory
