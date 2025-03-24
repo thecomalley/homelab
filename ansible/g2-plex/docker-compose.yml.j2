@@ -49,6 +49,7 @@ services:
 
   adguardhome:
     image: adguard/adguardhome
+    container_name: adguardhome
     ports:
       - 53:53/tcp # plain dns over tcp
       - 53:53/udp # plain dns over udp
@@ -57,3 +58,4 @@ services:
     volumes:
       - /opt/adguardhome/conf:/opt/adguardhome/conf # app configuration
       - /opt/adguardhome/work:/opt/adguardhome/work # app working directory
+    restart: unless-stopped
