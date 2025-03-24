@@ -55,5 +55,5 @@ services:
       - 80:80/tcp # http web interface
       - 3000:3000/tcp # initial setup web interface
     volumes:
-      - opt/adguardhome/conf:/opt/adguardhome/conf # app configuration
-      - opt/adguardhome/work:/opt/adguardhome/work # app working directory
+      - /opt/adguardhome/conf:/opt/adguardhome/conf # app configuration
+      - /opt/adguardhome/work:/opt/adguardhome/work # app working directory
