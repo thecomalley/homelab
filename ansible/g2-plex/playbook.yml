@@ -25,6 +25,14 @@
         autoremove: true
 
   tasks:
+    - name: Create Docker Compose file from Jinja template
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: docker-compose.yml
+        mode: '0644'
+      vars:
+        plex_claim: "{{ secret_plex_claim }}"
+
     - name: Tear down existing services
       community.docker.docker_compose_v2:
         project_src: /home/omadmin
@@ -38,14 +46,6 @@
         opts: rw,hard
         state: unmounted
         fstype: nfs
-
-    - name: Create Docker Compose file from Jinja template
-      ansible.builtin.template:
-        src: docker-compose.yml.j2
-        dest: docker-compose.yml
-        mode: '0644'
-      vars:
-        plex_claim: "{{ secret_plex_claim }}"
 
     - name: Mount NFS volume
       become: true
