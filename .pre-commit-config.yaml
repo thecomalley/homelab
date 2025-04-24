@@ -1,9 +1,18 @@
+# pre-commit run -a
 repos:
-  - repo: local
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0 # Use the ref you want to point at
     hooks:
-      - id: check-ansible-vault-encryption
-        name: Check Ansible Vault Encryption
-        entry: bash check_ansible_vault.sh
-        language: system
-        files: '^secrets\.yml$|.*/vars/.*\.yml$'
-        stages: [commit]
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: pretty-format-json
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
