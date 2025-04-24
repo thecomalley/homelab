@@ -1,3 +1,7 @@
+data "http" "ip" {
+  url = "https://ifconfig.me/ip"
+}
+
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
@@ -14,6 +18,12 @@ resource "azurerm_storage_account" "main" {
   min_tls_version                 = "TLS1_2"
   tags                            = var.tags
   access_tier                     = "Cool"
+
+  network_rules {
+    default_action = "Deny"
+    ip_rules       = [data.http.ip.response_body]
+  }
+
 }
 
 resource "azurerm_storage_management_policy" "example" {
