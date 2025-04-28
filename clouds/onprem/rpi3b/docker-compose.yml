@@ -1,0 +1,70 @@
+---
+services:
+  adguardhome:
+    container_name: adguardhome
+    image: adguard/adguardhome:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
+      - "3000:3000/tcp"
+    volumes:
+      - /opt/appdata/adguardhome/work/adguard/work:/opt/adguardhome/work
+      - /opt/appdata/adguardhome/work/adguard/conf:/opt/adguardhome/conf
+    restart: unless-stopped
+
+  ultrafeeder:
+    image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
+    container_name: ultrafeeder
+    hostname: ultrafeeder
+    restart: unless-stopped
+    device_cgroup_rules:
+      - "c 189:* rwm"
+    ports:
+      - 8080:80 # to expose the web interface
+      - 30005:30005 # to expose the beast output
+    environment:
+      - LOGLEVEL=error
+      - TZ=Pacific/Auckland
+      - READSB_DEVICE_TYPE=rtlsdr
+      - READSB_LAT=${READSB_LAT}
+      - READSB_LON=${READSB_LON}
+      - READSB_ALT=${READSB_ALT}
+      - ULTRAFEEDER_CONFIG=
+        adsb,feed.adsb.fi,30004,beast_reduce_plus_out;
+    volumes:
+      - /opt/appdata/ultrafeeder/globe_history:/var/globe_history
+      - /opt/appdata/ultrafeeder/graphs1090:/var/lib/collectd
+      - /proc/diskstats:/proc/diskstats:ro
+      - /dev/bus/usb:/dev/bus/usb
+    tmpfs:
+      - /run:exec,size=256M
+      - /tmp:size=128M
+      - /var/log:size=32M
+
+  fr24feed:
+    image: ghcr.io/sdr-enthusiasts/docker-flightradar24:latest
+    container_name: fr24feed
+    restart: always
+    ports:
+      - 8754:8754
+    environment:
+      - BEASTHOST=ultrafeeder
+      - FR24KEY=${FR24KEY}
+    dns_search: . # prevents rare connection issues related to a bug in docker and fr24feed
+
+  piaware:
+    image: ghcr.io/sdr-enthusiasts/docker-piaware:latest
+    container_name: piaware
+    restart: always
+    environment:
+      - TZ="Pacific/Auckland"
+      - RECEIVER_TYPE=relay
+      - BEASTHOST=ultrafeeder
+      - BEASTPORT=30005
+      - FEEDER_ID=${PIAWARE_FEEDER_ID}
+    tmpfs:
+      - /run:exec,size=64M
+      - /var/log

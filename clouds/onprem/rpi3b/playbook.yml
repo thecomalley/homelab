@@ -1,0 +1,76 @@
+- name: Raspberry Pi 3 Model B config
+  hosts: rpi3b
+  become: true
+
+  vars:
+    appdata: /opt/appdata
+
+  pre_tasks:
+    - name: Perform a apt-get update
+      ansible.builtin.apt:
+        upgrade: "yes"
+        update_cache: true
+
+    - name: Check if a reboot is required.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
+
+    - name: Reboot the server (if required).
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists
+
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.apt:
+        autoremove: true
+
+  # roles:
+  #   - geerlingguy.docker
+
+  tasks:
+    - name: Check if Docker Compose File exists
+      ansible.builtin.stat:
+        path: "{{ appdata }}/docker-compose.yml"
+      register: docker_compose_file
+
+    - name: Tear down existing services if they exist
+      community.docker.docker_compose_v2:
+        project_src: "{{ appdata }}"
+        state: absent
+      when: docker_compose_file.stat.exists
+
+    - name: Create appdata directory
+      ansible.builtin.file:
+        path: "{{ appdata }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Compose file
+      ansible.builtin.copy:
+        src: docker-compose.yml
+        dest: "{{ appdata }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Copy .env file
+      ansible.builtin.copy:
+        src: .env
+        dest: "{{ appdata }}/.env"
+        mode: '0644'
+
+    - name: Docker Compose up
+      community.docker.docker_compose_v2:
+        project_src: "{{ appdata }}"
+
+    - name: Delete old containers
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        networks: true
+        volumes: true
+        builder_cache: true
+
+    - name: Delete .env file
+      ansible.builtin.file:
+        path: "{{ appdata }}/.env"
+        state: absent

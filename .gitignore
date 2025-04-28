@@ -52,3 +52,9 @@ inventory.ini
 
 # DrawIO backup files
 *.drawio.bkp
+
+# Ignore Ansible Inventory
+inventory.yml
+
+# Ignore k3s ansible bootstrap repo
+clouds/onprem/k3s/k3s-ansible
