@@ -1,9 +1,9 @@
 #cloud-config
 autoinstall:
   version: 1
-  locale: en_US
+  locale: en_NZ
   keyboard:
-    layout: de
+    layout: us
   ssh:
     install-server: true
     allow-pw: true
@@ -20,14 +20,12 @@ autoinstall:
       size: 0
   user-data:
     package_upgrade: false
-    timezone: Europe/Berlin
+    timezone: Pacific/Auckland
     users:
-      - name: your-user-name
+      - name: ${ssh_username}
         groups: [adm, sudo]
         lock-passwd: false
         sudo: ALL=(ALL) NOPASSWD:ALL
         shell: /bin/bash
-        # passwd: your-password
-        # - or -
-        # ssh_authorized_keys:
-        #   - your-ssh-key
+        ssh_authorized_keys:
+          - ${ssh_authorized_keys}

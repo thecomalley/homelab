@@ -20,3 +20,8 @@ variable ssh_username {
   type        = string
   description = "Username for SSH connections"
 }
+
+variable ssh_authorized_keys {
+  type        = list(string)
+  description = "SSH public keys for the user"
+}

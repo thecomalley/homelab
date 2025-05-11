@@ -1,28 +1,39 @@
 packer {
   required_plugins {
-    name = {
+    proxmox = {
       version = "~> 1.0"
       source  = "github.com/hashicorp/proxmox"
     }
   }
 }
 
-# Resource Definiation for the VM Template
+# Create a local variable with the templated user-data
+locals {
+  user_data = templatefile("${path.root}/files/user-data.pkrtpl.hcl", {
+    ssh_username        = var.ssh_username
+    ssh_authorized_keys = join("\n", var.ssh_authorized_keys)
+  })
+}
+
+# Resource Definition for the VM Template
 source "proxmox-iso" "ubuntu-server-noble" {
 
   insecure_skip_tls_verify = true
-  node = "pve"
+  node                     = var.proxmox_node
 
   # VM General Settings
-  vm_id                = "999"
-  vm_name              = "ubuntu-server-noble"
-  template_description = "Ubuntu Server Noble Image"
+  vm_id   = "800"
+  vm_name = "ubuntu-server-noble"
+
+  template_name        = "template-ubuntu-server-24-04"
+  template_description = "Created by Packer on ${timestamp()}"
 
   # VM OS Settings
   boot_iso {
-    type = "scsi"
-    iso_file = "local:iso/ubuntu-24.04.2-live-server-amd64.iso"
-    unmount = true
+    type             = "scsi"
+    iso_file         = "local:iso/ubuntu-24.04.2-live-server-amd64.iso"
+    iso_storage_pool = "local"
+    unmount          = true
   }
 
   # VM System Settings
@@ -32,11 +43,10 @@ source "proxmox-iso" "ubuntu-server-noble" {
   scsi_controller = "virtio-scsi-pci"
 
   disks {
-    disk_size         = "20G"
-    format            = "raw"
-    storage_pool      = "local-lvm"
-    storage_pool_type = "lvm"
-    type              = "virtio"
+    disk_size    = "20G"
+    format       = "raw"
+    storage_pool = "local-lvm"
+    type         = "virtio"
   }
 
   # VM CPU Settings
@@ -56,7 +66,10 @@ source "proxmox-iso" "ubuntu-server-noble" {
   cloud_init              = true
   cloud_init_storage_pool = "local-lvm"
 
-  # PACKER Boot Commands
+  # The time to wait after booting the initial virtual machine before typing the boot_command
+  boot_wait = "10s"
+
+  # Escape the GUI installer and use the autoinstall method
   boot_command = [
     "<esc><wait>",
     "e<wait>",
@@ -66,21 +79,15 @@ source "proxmox-iso" "ubuntu-server-noble" {
     "<f10><wait>"
   ]
 
-  boot         = "c"
-  boot_wait    = "10s"
-  communicator = "ssh"
+  # Provide content to the autoinstall Server
+  http_content = {
+    "/user-data" = local.user_data
+    "/meta-data" = file("${path.root}/files/meta-data")
+  }
 
-  # PACKER Autoinstall Settings
-  http_directory = "http"
-  # (Optional) Bind IP Address and Port
-  # http_bind_address       = "0.0.0.0"
-  # http_port_min           = 8802
-  # http_port_max           = 8802
-
-  ssh_username = "omadmin"
-
-  # (Option 2) Add your Private SSH KEY file here
-  # ssh_private_key_file    = "~/.ssh/id_rsa"
+  communicator         = "ssh"
+  ssh_username         = var.ssh_username
+  ssh_private_key_file = "~/.ssh/id_rsa"
 
   # Raise the timeout, when installation takes longer
   ssh_timeout = "30m"
@@ -92,7 +99,7 @@ build {
   name    = "ubuntu-server-24-04"
   sources = ["source.proxmox-iso.ubuntu-server-noble"]
 
-  # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
+  # Prepare the image for generalization
   provisioner "shell" {
     inline = [
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
@@ -108,13 +115,13 @@ build {
     ]
   }
 
-  # Provisioning the VM Template for Cloud-Init Integration in Proxmox #2
+  # Copy the cloud-init datasource override file to the VM
   provisioner "file" {
     source      = "files/99-pve.cfg"
     destination = "/tmp/99-pve.cfg"
   }
 
-  # Provisioning the VM Template for Cloud-Init Integration in Proxmox #3
+  # Move the cloud-init the cloud-init datasource override file to the correct location
   provisioner "shell" {
     inline = ["sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg"]
   }

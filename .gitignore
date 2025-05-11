@@ -58,3 +58,25 @@ inventory.yml
 
 # Ignore k3s ansible bootstrap repo
 clouds/onprem/k3s/k3s-ansible
+
+### Packer files ###
+
+# Cache objects
+packer_cache/
+
+# Crash log
+crash.log
+
+# https://www.packer.io/guides/hcl/variables
+# Exclude all .pkrvars.hcl files, which are likely to contain sensitive data, 
+# such as password, private keys, and other secrets. These should not be part of 
+# version control as they are data points which are potentially sensitive and 
+# subject to change depending on the environment.
+#
+*.pkrvars.hcl
+
+# For built boxes
+*.box
+
+# Ignore any ISO files that are downloaded as part of the build process
+downloaded_iso_path
