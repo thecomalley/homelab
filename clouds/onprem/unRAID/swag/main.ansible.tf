@@ -2,7 +2,8 @@ resource "local_file" "ansible_inventory" {
   filename = "${path.module}/ansible/inventory.yml"
   content = templatefile("${path.module}/ansible/inventory.yml.tpl", {
     unraid_hostname = var.unraid_hostname,
-    services        = var.apps
+    unraid_username = var.unraid_username,
+    services        = keys(var.apps)
   })
 }
 

@@ -2,7 +2,8 @@ unRAID:
   hosts:
     ${unraid_hostname}:
       ansible_host: ${unraid_hostname}
+      ansible_user: ${unraid_username}
       services:
-    %{ for app in services ~}
-      - ${app}
+    %{ for service in services ~}
+      - ${service}
     %{ endfor ~}

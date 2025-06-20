@@ -3,7 +3,9 @@ data "uptimerobot_alert_contact" "pushover" {
 }
 
 resource "uptimerobot_monitor" "main" {
-  for_each = toset(var.apps)
+  for_each = {
+    for app, config in var.apps : app => config if config.external == true
+  }
 
   friendly_name = each.key
   type          = "http"

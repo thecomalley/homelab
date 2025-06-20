@@ -1,4 +1,4 @@
-# Secure Web Application Gateway (SWAG) 
+*# SWAG Split Brain DNS
 
 This module configures the [Secure Web Application Gateway (SWAG)](https://docs.linuxserver.io/images/docker-swag/) reverse proxy for unRAID.
 
@@ -55,3 +55,4 @@ No modules.
 ## Outputs
 
 No outputs.
+*
