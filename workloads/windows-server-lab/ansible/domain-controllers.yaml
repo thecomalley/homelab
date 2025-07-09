@@ -7,7 +7,7 @@
     - windows_server_baseline
   tasks:
     - name: Check if static IP is assigned
-      set_fact:
+      ansible.builtin.set_fact:
         ip_address_needs_update: "{{ static_ip is defined and static_ip != ansible_host }}"
 
     - name: Assign static IP
@@ -30,13 +30,13 @@
       when: ip_address_needs_update
 
     - name: Update ansible_host variable
-      set_fact:
+      ansible.builtin.set_fact:
         ansible_host: "{{ static_ip }}"
       when: ip_address_needs_update
       register: static_ip_update
 
     - name: Wait for the hosts network interface to back online
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
         delay: 10
         timeout: 300
       when: ip_address_needs_update
@@ -66,7 +66,7 @@
         adapter_names: "*"
         dns_servers:
           - "{{ primary_domain_controller_ip }}"
-      when: ansible_facts['windows_domain_role'] != 'Primary domain controller'
+      when: ansible_facts['windows_domain_role'] != 'Primary domain controller' or 'Backup domain controller'
 
     - name: PDC - Create Active Directory Domain
       microsoft.ad.domain:
@@ -101,7 +101,9 @@
         adapter_names: "*"
         dns_servers:
           - "{{ ansible_host }}"
-          - "{{ (groups['proxmox_windows_domain_controller'] | difference([inventory_hostname]) | map('extract', hostvars, 'ansible_host') | list | first) | default(omit) }}"
+          - >-
+            {{ (groups['proxmox_windows_domain_controller'] | difference([inventory_hostname]) |
+               map('extract', hostvars, 'ansible_host') | list | first) | default(omit) }}
 
     - name: Install all updates and reboot as many times as needed
       ansible.windows.win_updates:

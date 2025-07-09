@@ -10,7 +10,6 @@ repos:
       - id: check-xml
       - id: check-yaml
       - id: detect-private-key
-      - id: pretty-format-json
       - id: forbid-submodules
 
   - repo: https://github.com/Yelp/detect-secrets
