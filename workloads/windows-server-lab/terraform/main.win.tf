@@ -12,19 +12,19 @@ module "addc02" {
   tags        = ["windows_domain_controller", "role-domain_controller"]
 }
 
-# module "mec01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-mec01"
-#   description = "Microsoft Entra Connect Server"
-#   tags        = ["windows_server", "role-entra_connect_server"]
-# }
+module "mec01" {
+  source      = "./modules/cloned-vm"
+  vm_name     = "win-sync01"
+  description = "Microsoft Entra Connect Server"
+  tags        = ["windows_server", "role-entra_connect_server"]
+}
 
-# module "mgmt01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-mgmt01"
-#   description = "Management Server"
-#   tags        = ["windows_server", "role-management_server"]
-# }
+module "mgmt01" {
+  source      = "./modules/cloned-vm"
+  vm_name     = "win-mgmt01"
+  description = "Management Server"
+  tags        = ["windows_server", "role-management_server"]
+}
 
 # module "proxy01" {
 #   source      = "./modules/cloned-vm"

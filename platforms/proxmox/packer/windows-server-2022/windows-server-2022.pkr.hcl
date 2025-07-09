@@ -38,7 +38,8 @@ source "proxmox-iso" "windows_server_2022" {
     cd_label         = "BuildFiles"
     cd_files = [
       "./drivers/*",
-      "../build_files/virtio-win-guest-tools.exe",
+      "./files/virtio-win-guest-tools.exe",
+      "./files/sysprep_unattend.xml",
     ]
     # Generate some files with values provided by Packer
     cd_content = {
@@ -110,38 +111,20 @@ build {
   # CreateAnsibleUser
   provisioner "powershell" {
     name   = "CreateAnsibleUser"
-    script = "../build_files/CreateAnsibleUser.ps1"
-  }
-
-  # DisableIPv6
-  provisioner "powershell" {
-    name   = "DisableIPv6"
-    script = "../build_files/DisableIPv6.ps1"
-  }
-
-  # Disable PrintSpooler  
-  provisioner "powershell" {
-    name   = "DisablePrintSpooler"
-    script = "../build_files/DisablePrintSpooler.ps1"
-  }
-
-  # Disable SMBv1
-  provisioner "powershell" {
-    name   = "DisableSMBv1"
-    script = "../build_files/DisableSMBv1.ps1"
+    script = "scripts/CreateAnsibleUser.ps1"
   }
 
   # Enable RDP
   provisioner "powershell" {
     name   = "EnableRDP"
-    script = "../build_files/EnableRDP.ps1"
+    script = "scripts/EnableRDP.ps1"
   }
 
   # Sysprep the VM
   provisioner "powershell" {
     inline = [
-      # C:\Windows\System32\sysprep\sysprep.exe /generalize /oobe /quiet /unattend:D:\Autounattend.xml
-      "C:\\Windows\\System32\\sysprep\\sysprep.exe /generalize /oobe /quiet /unattend:D:\\Autounattend.xml"
+      # C:\Windows\System32\sysprep\sysprep.exe /generalize /oobe /quiet /unattend:D:\sysprep_unattend.xml
+      "C:\\Windows\\System32\\sysprep\\sysprep.exe /generalize /oobe /quiet /unattend:D:\\sysprep_unattend.xml"
     ]
   }
 

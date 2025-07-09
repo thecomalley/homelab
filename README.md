@@ -22,3 +22,12 @@ As is often the case with Homelab environments i have a family that consumes *so
 ---
 
 ![](./docs/homelab.drawio.png)
+
+## Secret Scanning
+
+Create a baseline of potential secrets currently found in your git repository.
+
+
+```bash
+detect-secrets scan > .secrets.baseline
+```
