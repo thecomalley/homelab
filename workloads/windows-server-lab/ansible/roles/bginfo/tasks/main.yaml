@@ -1,0 +1,23 @@
+---
+- name: Download BGInfo
+  ansible.windows.win_get_url:
+    url: '{{ bginfo_download_url }}'
+    dest: C:\Windows\Temp\BGInfo.zip
+    force: false
+
+- name: Unzip BGInfo
+  community.windows.win_unzip:
+    src: 'C:\Windows\Temp\BGInfo.zip'
+    dest: '{{ bginfo_install_dir }}'
+
+- name: Copy logon.bgi
+  ansible.windows.win_copy:
+    src: 'templates/logon.bgi'
+    dest: '{{ bginfo_install_dir }}\logon.bgi'
+
+- name: Autostart BGInfo
+  community.windows.win_shortcut:
+    src: '%SystemDrive%\BGInfo\BGInfo.exe'
+    dest: '%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp\BGInfo.lnk'
+    arguments: '{{ bginfo_install_dir }}\logon.bgi /timer:0 /nolicprompt'
+  when: bginfo_startmenu_autostart

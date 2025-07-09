@@ -40,3 +40,26 @@
 - name: Change power plan to high performance
   community.windows.win_power_plan:
     name: high performance
+
+- name: Disable Print Spooler Service
+  ansible.windows.win_service:
+    name: Spooler
+    start_mode: disabled
+    state: stopped
+
+- name: Disable SMBv1
+  ansible.windows.win_feature:
+    name: FS-SMB1
+    state: absent
+
+- name: Stop Server Manager from starting at logon
+  ansible.windows.win_regedit:
+    path: HKLM\SOFTWARE\Microsoft\ServerManager
+    name: DoNotOpenServerManagerAtLogon
+    data: 1
+    type: dword
+
+- name: Install all updates and reboot as many times as needed
+  ansible.windows.win_updates:
+    category_names: '*'
+    reboot: true

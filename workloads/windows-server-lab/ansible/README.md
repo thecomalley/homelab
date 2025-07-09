@@ -5,4 +5,11 @@
 `ansible-inventory -i inventory.proxmox.yaml --list`
 
 ## Provision the Domain Controllers 
-`ansible-playbook -i inventory.proxmox.yaml domain-controllers.yaml`
+`ansible-playbook -i inventory.proxmox.yaml configure-domain-controllers.yaml`
+
+## Configure the Member Servers
+`ansible-playbook -i inventory.proxmox.yaml configure-windows-servers.yaml`
+
+
+## Configure Only a specific server
+`ansible-playbook -i inventory.proxmox.yaml configure-windows-servers.yaml --limit win-mgmt01`

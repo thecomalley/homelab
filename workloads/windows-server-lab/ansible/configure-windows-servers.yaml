@@ -1,0 +1,37 @@
+---
+- name: Configure Windows Servers Base Configuration
+  hosts: proxmox_windows_server
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - windows_server_baseline
+    - bginfo
+
+# Management Server Configuration
+- name: Configure Management Servers
+  hosts: win-mgmt01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  tasks:
+    - name: Install Remote Server Administration Tools (RSAT)
+      ansible.windows.win_feature:
+        name: RSAT-Feature-Tools
+        state: present
+        include_sub_features: true
+        include_management_tools: true
+      register: rsat_install
+
+    - name: Reboot if RSAT installation requires it
+      ansible.windows.win_reboot:
+      when: rsat_install.reboot_required
+
+    - name: Download SysinternalsSuite
+      ansible.windows.win_get_url:
+        url: 'https://download.sysinternals.com/files/SysinternalsSuite.zip'
+        dest: C:\Windows\Temp\SysinternalsSuite.zip
+        force: false
+
+    - name: Unzip SysinternalsSuite
+      community.windows.win_unzip:
+        src: 'C:\Windows\Temp\SysinternalsSuite.zip'
+        dest: 'C:\SysinternalsSuite'
