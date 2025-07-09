@@ -1,0 +1,4 @@
+# Runs all playbooks in the playbooks directory
+---
+- name: Configure Domain Controllers
+  import_playbook: configure-domain-controllers.yaml

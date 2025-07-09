@@ -1,0 +1,5 @@
+# Ignore the virtio drivers and guest tools
+virtio-win-guest-tools.exe
+
+# Ignore the vioscsi disk drivers
+**/drivers/*

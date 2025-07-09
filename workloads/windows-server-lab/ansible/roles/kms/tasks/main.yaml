@@ -1,0 +1,28 @@
+---
+- name: Install KMS on Windows Server
+  ansible.windows.win_feature:
+    name: VolumeActivation
+    state: present
+
+- name: Enable KMS firewall rule
+  community.windows.win_firewall_rule:
+    name: Key Management Service (TCP-In)
+    enabled: true
+    state: present
+    profiles:
+      - Domain
+      - Private
+    action: allow
+    direction: in
+    protocol: tcp
+
+- name: Create KMS DNS record
+  community.windows.win_dns_record:
+    name: _vlmcs._tcp
+    type: SRV
+    zone: "{{ dns_domain_name }}"
+    value: "{{ inventory_hostname }}.{{ dns_domain_name }}"
+    port: 1688
+    priority: 0
+    weight: 100
+    state: present

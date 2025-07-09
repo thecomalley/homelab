@@ -1,0 +1,42 @@
+---
+- name: Hello World
+  ansible.builtin.debug:
+    msg: "I am a {{ ansible_facts['windows_domain_role'] }} called {{ ansible_facts['hostname'] }} who's IP is {{ ansible_host }}"
+
+- name: Set Local Administrator Password
+  ansible.windows.win_user:
+    name: Administrator
+    password: "{{ local_admin_password }}"
+
+- name: Set Timezone
+  ansible.windows.win_timezone:
+    timezone: New Zealand Standard Time
+  register: result
+
+- name: Set Hostname
+  ansible.windows.win_hostname:
+    name: "{{ inventory_hostname }}"
+  register: result
+
+- name: Reboot
+  ansible.windows.win_reboot:
+  when: result.reboot_required
+
+- name: Enable ICMP
+  community.windows.win_firewall_rule:
+    name: ICMP Allow incoming V4 echo request
+    enabled: true
+    state: present
+    profiles:
+      - Domain
+      - Private
+      - Public
+    action: allow
+    direction: in
+    protocol: icmpv4
+    icmp_type_code:
+      - '8:*'
+
+- name: Change power plan to high performance
+  community.windows.win_power_plan:
+    name: high performance
