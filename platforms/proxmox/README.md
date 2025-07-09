@@ -1,52 +1,62 @@
-# Hybrid Windows Server Lab
+# Proxmox Homelab Documentation
 
-Sometimes you just cant get away from Windows, the goal here is to ensure all Hybrid services that Microsoft provides are deployed into the lab environment, & since they all run on Windows Server we need some baseline Windows Server infra to support it (AD, DNS, DHCP, etc etc).
+This document serves as both reference and as-built documentation for the Proxmox Virtual Environment (PVE) implementation in the homelab.
 
-But fear not we are not giving into the light side (GUI) we can stay in dark mode and use Ansible to automate the and configuration of these servers, so we can still have a fully automated lab environment.
+## Environment Overview
 
+### Current Infrastructure
 
+| **Host** | **Hardware**             | **CPU** | **RAM** | **Storage** | **IP Address** | **Role** |
+| -------- | ------------------------ | ------- | ------- | ----------- | -------------- | -------- |
+| pve01    | HP EliteDesk 800 G2 Mini | 4 cores | 16GB    | 500GB SSD   | 192.168.1.x    | Host     |
 
-## Packer Tasks
-| ✅   | Task                      | Handled By | Method     | Notes                         |
-| --- | ------------------------- | ---------- | ---------- | ----------------------------- |
-| ☐   | Enable RDP                | Packer     | PowerShell | Native via `Set-ItemProperty` |
-| ☐   | Configure WinRM / OpenSSH | Packer     | PowerShell | Packer provisioning script    |
+## Datacenter Configuration
 
+### Completed Tasks
+- [x] Configure Metric Server to point to InfluxDB (Grafana for visualization)
 
+### Pending Tasks
+- [ ] Configure a Cluster (Pending additional hosts)
+- [ ] Configure High Availability (Pending additional hosts)
+- [ ] Implement central storage solution
 
+## New Host Setup
 
+### Initial Configuration Checklist
+- [ ] Update firmware/BIOS to latest version
+- [ ] Install Proxmox VE (latest stable version)
+- [ ] Configure network settings
+- [ ] Enable Notifications
+- [ ] Configure Update Repositories
+- [ ] Configure DNS settings
+- [ ] Integrate with backup solution
 
-## 🛠️ Core Baseline Role
+### Notifications Setup
+Pushover is used for system notifications via webhooks:
 
-| ✅   | Task                           | Handled By | Method                                | Notes                        |
-| --- | ------------------------------ | ---------- | ------------------------------------- | ---------------------------- |
-| ☐   | Set hostname                   | Ansible    | `ansible.windows.win_hostname`        | Native Ansible               |
-| ☐   | Set timezone                   | Ansible    | `ansible.windows.win_timezone`        | Native Ansible               |
-| ☐   | Create Administrator User      | Ansible    | `ansible.windows.win_user`            | Use script to rename/disable |
-| ☐   | Disable built-in Administrator | Ansible    | `ansible.windows.win_user`            | Use script to rename/disable |
-| ☐   | Enable ICMP                    | Ansible    | `community.windows.win_firewall_rule` | Native Ansible               |
-| ☐   | Install updates                | Ansible    | `ansible.windows.win_updates`         | Native Ansible               |
-| ☐   | Remove SMBv1                   | Ansible    | `ansible.windows.win_feature`         | Native Ansible               |
+**Configuration Details:**
+- **Method/URL:** POST https://api.pushover.net/1/messages.json
+- **Content-Type:** application/json
 
+**Request Body Template:**
+```json
+{
+  "token": "{{ secrets.apikey }}",
+  "user": "{{ secrets.userkey }}",
+  "title": "{{ title }}",
+  "message": "{{ escape message }}",
+  "priority": "0",
+  "timestamp": "{{ timestamp }}"
+}
+```
 
-| ☐   | Enable LAPS                          | Ansible (opt.)  | PowerShell                             | MS tool install + registry settings |
-| ☐   | Set firewall rules                   | Ansible         | `community.windows.win_firewall_rule`  | Native Ansible                      |
-| ☐   | Activate via KMS                     | Ansible         | PowerShell                             | `slmgr.vbs` or registry method      |
-| ☐   | Install BGInfo                       | GPO (preferred) | PowerShell (fallback)                  | Script can copy & schedule          |
-| ☐   | Configure NTP                        | Ansible         | PowerShell                             | No native module                    |
-| ☐   | Update Defender defs/settings        | Ansible         | PowerShell                             | `Update-MpSignature` etc.           |
-| ☐   | Set PowerShell execution policy      | Ansible         | `ansible.windows.win_shell`            | No native module (just shell)       |
-| ☐   | Harden local admin group             | Ansible         | `ansible.windows.win_group_membership` | Native Ansible                      |
-| ☐   | Configure pagefile                   | Ansible (opt.)  | PowerShell                             | WMI / registry changes              |
-| ☐   | Run BPA for installed roles          | Ansible (opt.)  | PowerShell                             | Use `Invoke-BpaModel`               |
-| ☐   | Export BPA results to file           | Ansible         | PowerShell                             | `Get-BpaResult` > file              |
-| ☐   | Generate system info report          | Ansible         | PowerShell                             | CPU, RAM, OS, roles, IP, etc.       |
-| ☐   | Copy report to central share/log     | Ansible         | `ansible.windows.win_copy`             | Native Ansible                      |
-| ☐   | Install Azure Arc agent              | Ansible (opt.)  | PowerShell                             | Script with installer + config      |
-| ☐   | Register with Arc                    | Ansible (opt.)  | PowerShell                             | Via onboarding script               |
-| ☐   | Install & run AsBuiltReport          | Ansible (opt.)  | PowerShell                             | Install module, run report          |
-| ☐   | Upload reports to SharePoint (Graph) | Ansible (opt.)  | PowerShell                             | Graph API + token                   |
-| ☐   | Optimize performance                 | Ansible         | PowerShell                             | Disable services, adjust settings   |
+### Repository Configuration
+1. Enterprise repository should be disabled unless subscription is active
+2. Configure no-subscription repository:
+   - Follow instructions at: https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install
+3. Add the pve-no-subscription repo for updates
 
-## role Specific Tasks
-| ☐   | Join domain                          | Ansible         | `ansible.windows.win_domain_membership` | Native Ansible                      |
+### DNS Configuration
+- Add the host to the DNS server with both forward and reverse lookups
+- Ensure hostname resolution works correctly within the network
+- Recommended: Set up a dedicated DNS record for Proxmox web interface

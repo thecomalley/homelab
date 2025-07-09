@@ -1,5 +1,9 @@
 # Windows Server Lab
 
+Sometimes you just cant get away from Windows, the goal here is to ensure all Hybrid services that Microsoft provides are deployed into the lab environment, & since they all run on Windows Server we need some baseline Windows Server infra to support it (AD, DNS, DHCP, etc etc).
+
+But fear not we are not giving into the light side (GUI) we can stay in dark mode and use Ansible to automate the and configuration of these servers, so we can still have a fully automated lab environment.
+
 This repository contains a Windows Server lab setup using Terraform, Proxmox, and Ansible. It is designed to help you quickly set up a Windows Server environment for testing and development purposes.
 
 ## Server Inventory
