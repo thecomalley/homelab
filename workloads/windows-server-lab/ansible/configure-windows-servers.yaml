@@ -4,11 +4,11 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
+    - bginfo
     - windows_server_baseline
     - member_server
-    - bginfo
 
-# win-mgmt01 Specific Configuration
+### Configure Windows Management Servers
 - name: Configure Management Servers
   hosts: win-mgmt01
   vars_files:

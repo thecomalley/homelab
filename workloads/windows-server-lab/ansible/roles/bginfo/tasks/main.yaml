@@ -12,12 +12,17 @@
 
 - name: Copy logon.bgi
   ansible.windows.win_copy:
-    src: 'templates/logon.bgi'
-    dest: '{{ bginfo_install_dir }}\logon.bgi'
+    src: 'templates/BGConfig.bgi'
+    dest: '{{ bginfo_install_dir }}\BGConfig.bgi'
+
+- name: Copy wallpaper
+  ansible.windows.win_copy:
+    src: 'templates/taylor-vick-M5tzZtFCOfs-unsplash.jpg'
+    dest: '{{ bginfo_install_dir }}\taylor-vick-M5tzZtFCOfs-unsplash.jpg'
 
 - name: Autostart BGInfo
   community.windows.win_shortcut:
     src: '%SystemDrive%\BGInfo\BGInfo.exe'
     dest: '%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp\BGInfo.lnk'
-    arguments: '{{ bginfo_install_dir }}\logon.bgi /timer:0 /nolicprompt'
+    arguments: '{{ bginfo_install_dir }}\BGConfig.bgi /timer:0 /nolicprompt'
   when: bginfo_startmenu_autostart

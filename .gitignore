@@ -83,3 +83,6 @@ downloaded_iso_path
 
 # Any executable files
 *.exe
+
+# Any image files that are used as wallpapers or backgrounds
+.jpg
