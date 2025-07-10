@@ -1,0 +1,10 @@
+---
+- name: Domain Join Windows Member Server
+  microsoft.ad.membership:
+    dns_domain_name: "{{ dns_domain_name }}"
+    hostname: "{{ inventory_hostname }}"
+    domain_admin_user: "{{ domain_admin_user }}"
+    domain_admin_password: "{{ domain_admin_password }}"
+    domain_ou_path: "{{ servers_ou_path }}"
+    state: domain
+    reboot: true

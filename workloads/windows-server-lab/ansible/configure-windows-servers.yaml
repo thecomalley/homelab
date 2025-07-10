@@ -5,9 +5,10 @@
     - vars/windows_lab_vars.yml
   roles:
     - windows_server_baseline
+    - member_server
     - bginfo
 
-# Management Server Configuration
+# win-mgmt01 Specific Configuration
 - name: Configure Management Servers
   hosts: win-mgmt01
   vars_files:
@@ -36,10 +37,17 @@
         src: 'C:\Windows\Temp\SysinternalsSuite.zip'
         dest: 'C:\SysinternalsSuite'
 
-# KMS Server Configuration
-- name: Configure KMS Server
-  hosts: proxmox_windows_domain_controller
-  vars_files:
-    - vars/windows_lab_vars.yml
-  roles:
-    - kms_server
+    - name: Copy Windows Admin Center installer
+      ansible.windows.win_copy:
+        src: 'installers/WindowsAdminCenter2410.exe'
+        dest: 'C:\Windows\Temp\WindowsAdminCenter2410.exe'
+
+    - name: Install Windows Admin Center
+      ansible.windows.win_package:
+        path: 'C:\Windows\Temp\WindowsAdminCenter2410.exe'
+        arguments: /VERYSILENT
+
+    - name: Start Windows Admin Center service
+      ansible.windows.win_service:
+        name: WindowsAdminCenter
+        state: started

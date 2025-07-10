@@ -80,3 +80,6 @@ crash.log
 
 # Ignore any ISO files that are downloaded as part of the build process
 downloaded_iso_path
+
+# Any executable files
+*.exe
