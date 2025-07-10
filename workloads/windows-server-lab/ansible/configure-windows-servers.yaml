@@ -35,3 +35,11 @@
       community.windows.win_unzip:
         src: 'C:\Windows\Temp\SysinternalsSuite.zip'
         dest: 'C:\SysinternalsSuite'
+
+# KMS Server Configuration
+- name: Configure KMS Server
+  hosts: proxmox_windows_domain_controller
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - kms_server
