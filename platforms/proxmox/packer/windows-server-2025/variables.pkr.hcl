@@ -103,7 +103,7 @@ variable administrator_password {
   default     = "P@ssw0rd1234!"
 }
 
-variable time_zone {
+variable timezone {
   type        = string
   description = "Timezone for the Windows VM"
   default     = "New Zealand Standard Time"
@@ -119,4 +119,11 @@ variable image_name {
   type        = string
   description = "Name of the image to be installed from the ISO"
   default     = "Windows Server 2025 SERVERSTANDARD"
+}
+
+
+variable vm_id {
+  type        = number
+  description = "VM ID for the Proxmox VM"
+  default     = 2025
 }
