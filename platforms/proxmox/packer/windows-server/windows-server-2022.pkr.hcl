@@ -12,9 +12,7 @@ packer {
 }
 
 source "proxmox-iso" "windows_server_2022" {
-  insecure_skip_tls_verify = true
-  node                     = var.node
-
+  node    = var.node
   bios    = "ovmf" # OVMF is the UEFI BIOS for QEMU/KVM
   machine = "q35"  # Q35 is the recommended machine type for modern OSes
 
@@ -62,7 +60,7 @@ source "proxmox-iso" "windows_server_2022" {
   template_name        = "windows-server-2022-${var.install_mode}"
   template_description = "Packer Template for Windows Server 2022 (${var.install_mode})"
   vm_name              = "windows-server-2022-${var.install_mode}"
-  vm_id                = var.vm_id
+  # vm_id                = var.vm_id
   memory               = var.memory
   ballooning_minimum   = var.min_memory
   cores                = var.cores
@@ -120,21 +118,58 @@ build {
     script = "scripts/EnableRDP.ps1"
   }
 
-  # Sysprep the VM
+  # Install Windows Updates
+  # provisioner "windows-update" {
+  #   search_criteria = "IsInstalled=0"
+  #   filters = [
+  #     "exclude:$_.Title -like '*Preview*'",
+  #     "include:$true",
+  #   ]
+  #   update_limit = 25
+  # }
+
+  # Copy the unattend.xml file to multiple locations to ensure it's found
+  provisioner "file" {
+    source      = "./files/sysprep_unattend.xml"
+    destination = "C:/Windows/Temp/sysprep_unattend.xml"
+  }
+  
+  # Copy to Sysprep directory as a backup location
   provisioner "powershell" {
     inline = [
-      # C:\Windows\System32\sysprep\sysprep.exe /generalize /oobe /quiet /unattend:D:\sysprep_unattend.xml
-      "C:\\Windows\\System32\\sysprep\\sysprep.exe /generalize /oobe /quiet /unattend:D:\\sysprep_unattend.xml"
+      "Copy-Item -Path 'C:/Windows/Temp/sysprep_unattend.xml' -Destination 'C:/Windows/System32/Sysprep/unattend.xml' -Force",
+      "Write-Host 'Unattend.xml has been copied to Sysprep directory'",
+      "Get-ChildItem -Path 'C:/Windows/System32/Sysprep/unattend.xml' | Select-Object FullName, Length"
+    ]
+  }
+  
+  # Run diagnostics before Sysprep to verify system state
+  provisioner "powershell" {
+    inline = [
+      "Write-Host '=== PRE-SYSPREP DIAGNOSTICS ==='",
+      "Write-Host 'Checking Windows Ready for Sysprep:'",
+      "Get-Service | Where-Object {$_.Name -like 'BITS' -or $_.Name -like 'wuauserv' -or $_.Name -like 'TrustedInstaller'} | Format-Table Name, Status",
+      "Write-Host 'Checking for pending Windows updates:'",
+      "$UpdateSession = New-Object -ComObject Microsoft.Update.Session",
+      "$UpdateSearcher = $UpdateSession.CreateUpdateSearcher()",
+      "$SearchResult = $UpdateSearcher.Search('IsInstalled=0')",
+      "Write-Host \"Pending updates: $($SearchResult.Updates.Count)\"",
+      "Write-Host 'Verifying Sysprep files:'",
+      "Test-Path 'C:\\Windows\\System32\\Sysprep\\Sysprep.exe' -ErrorAction SilentlyContinue",
+      "Write-Host 'Disk space:'",
+      "Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free",
+      "Write-Host '=== END PRE-SYSPREP DIAGNOSTICS ==='"
     ]
   }
 
-  # Breakpoint for manual intervention
-  provisioner "breakpoint" {
-    note = "This is a breakpoint. Please check the VM and ensure sysprep was successful."
-  }
-
-  # Wait for 60 seconds to allow sysprep to complete
-  provisioner "shell-local" {
-    inline = ["sleep 60"]
+  # Run Sysprep
+  provisioner "powershell" {
+    script           = "./scripts/Sysprep.ps1"
+    # Allow more exit codes as success
+    valid_exit_codes = [0, 1, 2300218, -1] # 2300218 is when Packer loses connection to the VM after Sysprep
+    pause_before     = "10s" # Give the system a moment to prepare
+    pause_after      = "180s" # Extended pause to ensure shutdown completes
+    # Increase the default timeout
+    timeout          = "15m"
   }
 }

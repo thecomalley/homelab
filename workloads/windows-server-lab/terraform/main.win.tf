@@ -1,30 +1,30 @@
-module "addc01" {
-  source      = "./modules/cloned-vm"
-  vm_name     = "win-dc01"
-  description = "Active Directory Domain Controller"
-  tags        = ["windows_domain_controller", "role-domain_controller"]
-}
+# module "addc01" {
+#   source      = "./modules/cloned-vm"
+#   vm_name     = "win-dc01"
+#   description = "Active Directory Domain Controller"
+#   tags        = ["windows_domain_controller", "role-domain_controller"]
+# }
 
-module "addc02" {
-  source      = "./modules/cloned-vm"
-  vm_name     = "win-dc02"
-  description = "Active Directory Domain Controller"
-  tags        = ["windows_domain_controller", "role-domain_controller"]
-}
+# module "addc02" {
+#   source      = "./modules/cloned-vm"
+#   vm_name     = "win-dc02"
+#   description = "Active Directory Domain Controller"
+#   tags        = ["windows_domain_controller", "role-domain_controller"]
+# }
 
-module "mec01" {
-  source      = "./modules/cloned-vm"
-  vm_name     = "win-sync01"
-  description = "Microsoft Entra Connect Server"
-  tags        = ["windows_server", "role-entra_connect_server"]
-}
+# module "mec01" {
+#   source      = "./modules/cloned-vm"
+#   vm_name     = "win-sync01"
+#   description = "Microsoft Entra Connect Server"
+#   tags        = ["windows_server", "role-entra_connect_server"]
+# }
 
-module "mgmt01" {
-  source      = "./modules/cloned-vm"
-  vm_name     = "win-mgmt01"
-  description = "Management Server"
-  tags        = ["windows_server", "role-management_server"]
-}
+# module "mgmt01" {
+#   source      = "./modules/cloned-vm"
+#   vm_name     = "win-mgmt01"
+#   description = "Management Server"
+#   tags        = ["windows_server", "role-management_server"]
+# }
 
 # module "proxy01" {
 #   source      = "./modules/cloned-vm"

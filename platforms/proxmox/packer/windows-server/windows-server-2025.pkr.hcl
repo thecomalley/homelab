@@ -15,8 +15,8 @@ source "proxmox-iso" "windows_server_2025" {
   insecure_skip_tls_verify = true
   node                     = var.node
 
-  bios     = "ovmf"          # OVMF is the UEFI BIOS for QEMU/KVM
-  machine  = "q35"           # Q35 is the recommended machine type for modern OSes
+  bios     = "ovmf"      # OVMF is the UEFI BIOS for QEMU/KVM
+  machine  = "q35"       # Q35 is the recommended machine type for modern OSes
   cpu_type = "x86-64-v3" # Seams to be the best option for Windows Server 2025
 
   # EFI Configuration
@@ -30,12 +30,6 @@ source "proxmox-iso" "windows_server_2025" {
     tpm_storage_pool = var.efi_storage
   }
 
-  # Boot ISO | maps to E:\
-  boot_iso {
-    iso_file = var.windows_iso
-    unmount  = true
-  }
-
   # BuildFiles | maps to D:\
   additional_iso_files {
     iso_storage_pool = var.iso_storage_pool
@@ -45,7 +39,8 @@ source "proxmox-iso" "windows_server_2025" {
       "./drivers/*",
       "./files/virtio-win-guest-tools.exe",
       "./files/virtio-win-gt-x64.msi",
-      "./files/sysprep_unattend.xml",
+      "./files/unattend.xml",
+      "./files/sysprep.bat",
     ]
     # Generate some files with values provided by Packer
     cd_content = {
@@ -74,23 +69,27 @@ source "proxmox-iso" "windows_server_2025" {
   cores                = var.cores
   sockets              = var.socket
   os                   = "win11"
-  scsi_controller      = "virtio-scsi-single"
 
   # Network
   network_adapters {
     model    = "virtio"
-    bridge   = var.bridge
-    vlan_tag = var.vlan
+    bridge   = "vmbr0"
   }
 
   # Storage
+  scsi_controller = "virtio-scsi-single"
   disks {
-    storage_pool = var.disk_storage
-    # storage_pool_type = "btrfs"
-    type       = "scsi"
-    disk_size  = var.disk_size_gb
-    cache_mode = "writeback"
-    format     = "raw"
+    type         = "scsi"
+    io_thread    = true
+    ssd          = true
+    discard      = true
+    disk_size    = var.disk_size
+    storage_pool = "local-lvm"
+    format       = "raw" 
+  }
+  boot_iso {
+    iso_file = var.windows_iso
+    unmount  = true
   }
 
   # WinRM
@@ -111,35 +110,57 @@ build {
   sources = ["source.proxmox-iso.windows_server_2025"]
 
   # Reboot the VM
-  provisioner "windows-restart" {}
+  provisioner "windows-restart" {
+  }
 
   # CreateAnsibleUser
   provisioner "powershell" {
-    name   = "CreateAnsibleUser"
-    script = "scripts/CreateAnsibleUser.ps1"
+    name        = "CreateAnsibleUser"
+    script      = "scripts/CreateAnsibleUser.ps1"
+    pause_after = "30s"
+    debug_mode  = 1
   }
 
   # Enable RDP
   provisioner "powershell" {
-    name   = "EnableRDP"
-    script = "scripts/EnableRDP.ps1"
+    name        = "EnableRDP"
+    script      = "scripts/EnableRDP.ps1"
+    pause_after = "30s"
+    debug_mode  = 1
   }
 
-  # C:\Windows\System32\sysprep\sysprep.exe /generalize /oobe /quiet /unattend:D:\sysprep_unattend.xml
-  # Sysprep the VM
-  provisioner "powershell" {
-    inline = [
-      "start /wait C:\\Windows\\System32\\sysprep\\sysprep.exe /generalize /oobe /quiet /unattend:D:\\sysprep_unattend.xml"
+  # Install Windows Updates
+  provisioner "windows-update" {
+    search_criteria = "IsInstalled=0"
+    filters = [
+      "exclude:$_.Title -like '*Preview*'",
+      "include:$true",
     ]
+    update_limit = 25
   }
 
-  # Breakpoint for manual intervention
-  provisioner "breakpoint" {
-    note = "This is a breakpoint. Please check the VM and ensure sysprep was successful."
+  # Copy the unattend.xml file to the VM
+  provisioner "file" {
+    source = "./build_files/unattend.xml"
+    destination = "C:/Windows/Temp/unattend.xml"
   }
 
-  # Wait for 60 seconds to allow sysprep to complete
-  provisioner "shell-local" {
-    inline = ["sleep 60"]
+
+
+  # Run Sysprep
+  provisioner "powershell" {
+    script = "./build_files/Sysprep.ps1"
+    valid_exit_codes = [0, 2300218] # 2300218 is a code when Packer looses connection to the VM after Sysprep
+    pause_after = "120s"
   }
+
+  provisioner "file" {
+    destination = "C:\\Windows\\System32\\Sysprep\\unattend.xml"
+    source      = "${var.sysprep_unattended}"
+  }
+
+  provisioner "powershell" {
+    inline = ["Write-Output Phase-5-Deprovisioning", "if (!(Test-Path -Path $Env:SystemRoot\\system32\\Sysprep\\unattend.xml)){ Write-Output 'No file';exit (10)}", "& $Env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quit /quiet /unattend:C:\\Windows\\system32\\sysprep\\unattend.xml"]
+  }
+
 }
