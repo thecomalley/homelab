@@ -5,6 +5,8 @@
     - vars/windows_lab_vars.yml
   roles:
     - windows_server_baseline
+    - bginfo
+
   tasks:
     - name: Check if static IP is assigned
       ansible.builtin.set_fact:

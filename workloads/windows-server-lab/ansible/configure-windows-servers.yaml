@@ -4,8 +4,8 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
-    - bginfo
     - windows_server_baseline
+    - bginfo
     - member_server
 
 ### Configure Windows Management Servers
