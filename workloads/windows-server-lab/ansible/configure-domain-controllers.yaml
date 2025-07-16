@@ -85,6 +85,7 @@
         reboot: true
       when: inventory_hostname == (groups['proxmox_windows_domain_controller'] | sort)[0]
 
+    # Note: having issues with this task on first run but its pretty trivial to configure manually so not too worried about it
     - name: Promote Secondary Domain Controllers
       microsoft.ad.domain_controller:
         dns_domain_name: "{{ dns_domain_name }}"

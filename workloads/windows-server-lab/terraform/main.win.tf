@@ -24,12 +24,14 @@ module "addc02" {
 #   tags        = ["windows_server", "role-entra_connect_server"]
 # }
 
-# module "mgmt01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-mgmt01"
-#   description = "Management Server"
-#   tags        = ["windows_server", "role-management_server"]
-# }
+module "mgmt01" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 603
+  vm_name     = "win-mgmt01"
+  description = "Management Server"
+  tags        = ["windows_server", "role-management_server"]
+  clone_from  = "windows-server-2025"
+}
 
 # module "proxy01" {
 #   source      = "./modules/cloned-vm"
