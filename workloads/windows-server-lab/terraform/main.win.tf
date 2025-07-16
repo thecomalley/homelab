@@ -1,16 +1,21 @@
-# module "addc01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-dc01"
-#   description = "Active Directory Domain Controller"
-#   tags        = ["windows_domain_controller", "role-domain_controller"]
-# }
+# Windows Server 2025 is chaos and resource hungry so we will use 2022 for now
+module "addc01" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 601
+  vm_name     = "win-dc01"
+  description = "Active Directory Domain Controller"
+  tags        = ["windows_domain_controller", "role-domain_controller"]
+  clone_from  = "windows-server-2022"
+}
 
-# module "addc02" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-dc02"
-#   description = "Active Directory Domain Controller"
-#   tags        = ["windows_domain_controller", "role-domain_controller"]
-# }
+module "addc02" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 602
+  vm_name     = "win-dc02"
+  description = "Active Directory Domain Controller"
+  tags        = ["windows_domain_controller", "role-domain_controller"]
+  clone_from  = "windows-server-2022"
+}
 
 # module "mec01" {
 #   source      = "./modules/cloned-vm"

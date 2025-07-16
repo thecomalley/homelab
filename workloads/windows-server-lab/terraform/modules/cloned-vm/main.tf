@@ -4,13 +4,14 @@ resource "proxmox_vm_qemu" "main" {
   target_node            = "pve"
   agent                  = 1
   balloon                = 1024
+  vmid                   = var.vm_id
   bios                   = "ovmf"
   boot                   = "order=scsi0;net0"
   cores                  = 2
   define_connection_info = false
   memory                 = 4096
   scsihw                 = "virtio-scsi-pci"
-  clone                  = "windows-server-2022-desktop"
+  clone                  = var.clone_from
   full_clone             = false
   tags                   = join(",", var.tags)
 
