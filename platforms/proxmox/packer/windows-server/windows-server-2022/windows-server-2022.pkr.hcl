@@ -14,6 +14,8 @@ packer {
 source "proxmox-iso" "windows_server_2022" {
   node = "pve"
 
+  vm_name = "windows-server-2022"
+  vm_id                = 2022
   template_name        = "windows-server-2022"
   template_description = <<EOF
 Windows Server 2022 Template for Packer
@@ -29,8 +31,6 @@ Created by Packer on ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}
 
   bios    = "ovmf"
   machine = "q35"
-  vm_name = "windows-server-2022"
-  # vm_id                = var.vm_id
 
   cores              = 2
   memory             = 4096

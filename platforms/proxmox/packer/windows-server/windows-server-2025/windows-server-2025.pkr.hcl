@@ -12,12 +12,22 @@ packer {
 }
 
 source "proxmox-iso" "windows_server_2025" {
+  vm_id                = 2025
+  vm_name              = "windows-server-2025"
+  template_name        = "windows-server-2025"
+
+  template_description = <<EOF
+Windows Server 2022 Template for Packer
+
+Created by Packer on ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}
+    EOF
+
   insecure_skip_tls_verify = true
   node                     = var.node
 
   bios     = "ovmf"      # OVMF is the UEFI BIOS for QEMU/KVM
   machine  = "q35"       # Q35 is the recommended machine type for modern OSes
-  cpu_type = "x86-64-v3" # Seams to be the best option for Windows Server 2025
+  cpu_type = "x86-64-v2-AES,hidden=1,flags=+pcid" # Seams to be the best option for Windows Server 2025
 
   # EFI Configuration
   efi_config {
@@ -51,11 +61,6 @@ source "proxmox-iso" "windows_server_2025" {
     }
   }
 
-
-  template_name        = "windows-server-2025-${var.install_mode}"
-  template_description = "Packer Template for Windows Server 2025 (${var.install_mode})"
-  vm_name              = "windows-server-2025-${var.install_mode}"
-  vm_id                = var.vm_id
   memory               = var.memory
   ballooning_minimum   = var.min_memory
   cores                = var.cores
