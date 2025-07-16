@@ -30,35 +30,27 @@ source "proxmox-iso" "windows_server_2025" {
     tpm_storage_pool = var.efi_storage
   }
 
-  # BuildFiles | maps to D:\
   additional_iso_files {
-    iso_storage_pool = var.iso_storage_pool
+    iso_storage_pool = "local"
     unmount          = true
-    cd_label         = "BuildFiles"
     cd_files = [
-      "./drivers/*",
-      "./files/virtio-win-guest-tools.exe",
-      "./files/virtio-win-gt-x64.msi",
-      "./files/unattend.xml",
-      "./files/sysprep.bat",
+      "../drivers/2025/*",
+      "../scripts/bootstrap.ps1",
+      "../installers/virtio-win-gt-x64.msi",
+      "../installers/qemu-ga-x86_64.msi",
     ]
-    # Generate some files with values provided by Packer
     cd_content = {
-
-      # The Autounattend.xml file is used for unattended installation of Windows
-      "Autounattend.xml" = templatefile("./templates/Autounattend.xml.pkrtpl", {
-        ImageName             = var.image_name,
-        ProductKey            = var.product_key,
-        TimeZone              = var.timezone,
-        AdministratorPassword = var.administrator_password,
+      "Autounattend.xml" = templatefile("../files/2025/Autounattend.xml.pkrtpl", {
+        ProductKey            = var.product_key
+        TimeZone              = var.time_zone
+        AdministratorPassword = var.administrator_password
       })
-
-      # Inject the SSH key into the ConfigureSSHForAnsible script
-      "EnableSSH.ps1" = templatefile("./templates/EnableSSH.ps1", {
+      "EnableSSH.ps1" = templatefile("../templates/EnableSSH.ps1", {
         publicKey = chomp(file(var.public_key_path))
       })
     }
   }
+
 
   template_name        = "windows-server-2025-${var.install_mode}"
   template_description = "Packer Template for Windows Server 2025 (${var.install_mode})"
@@ -109,58 +101,44 @@ build {
   name    = "Proxmox Build"
   sources = ["source.proxmox-iso.windows_server_2025"]
 
-  # Reboot the VM
-  provisioner "windows-restart" {
-  }
+  provisioner "windows-restart" {}
 
-  # CreateAnsibleUser
+  # Windows Updates keeps crashing the build, so it's disabled for now
+  # provisioner "windows-update" {
+  #   search_criteria = "IsInstalled=0"
+  #   update_limit = 10
+  # }
+
+  # Configure Windows
   provisioner "powershell" {
-    name        = "CreateAnsibleUser"
-    script      = "scripts/CreateAnsibleUser.ps1"
-    pause_after = "30s"
-    debug_mode  = 1
+    pause_before     = "15s"
+    script           = "../scripts/CreateAnsibleUser.ps1"
+    pause_after      = "15s"
   }
 
-  # Enable RDP
   provisioner "powershell" {
-    name        = "EnableRDP"
-    script      = "scripts/EnableRDP.ps1"
-    pause_after = "30s"
-    debug_mode  = 1
+    pause_before     = "15s"
+    script           = "../scripts/EnableWinRM.ps1"
+    pause_after      = "15s"
   }
 
-  # Install Windows Updates
-  provisioner "windows-update" {
-    search_criteria = "IsInstalled=0"
-    filters = [
-      "exclude:$_.Title -like '*Preview*'",
-      "include:$true",
-    ]
-    update_limit = 25
+  provisioner "powershell" {
+    pause_before     = "15s"
+    script           = "../scripts/EnableRDP.ps1"
+    pause_after      = "15s"
   }
 
-  # Copy the unattend.xml file to the VM
+  # Sysprep the VM
   provisioner "file" {
-    source = "./build_files/unattend.xml"
-    destination = "C:/Windows/Temp/unattend.xml"
-  }
-
-
-
-  # Run Sysprep
-  provisioner "powershell" {
-    script = "./build_files/Sysprep.ps1"
-    valid_exit_codes = [0, 2300218] # 2300218 is a code when Packer looses connection to the VM after Sysprep
-    pause_after = "120s"
-  }
-
-  provisioner "file" {
-    destination = "C:\\Windows\\System32\\Sysprep\\unattend.xml"
-    source      = "${var.sysprep_unattended}"
+    source      = "../files/2025/unattend.xml"
+    destination = "C:/Windows/System32/Sysprep/unattend.xml"
   }
 
   provisioner "powershell" {
-    inline = ["Write-Output Phase-5-Deprovisioning", "if (!(Test-Path -Path $Env:SystemRoot\\system32\\Sysprep\\unattend.xml)){ Write-Output 'No file';exit (10)}", "& $Env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quit /quiet /unattend:C:\\Windows\\system32\\sysprep\\unattend.xml"]
+    pause_before     = "15s"
+    script           = "../scripts/Sysprep.ps1"
+    valid_exit_codes = [0, 1, 2300218, -1] # 2300218 is when Packer loses connection to the VM after Sysprep
+    pause_after      = "10s"
+    timeout          = "15m"
   }
-
 }

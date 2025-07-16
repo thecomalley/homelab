@@ -18,74 +18,80 @@
             <UserLocale>en-NZ</UserLocale>
         </component>
         <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <UserData>
-                <ProductKey>
-                    <Key>${ProductKey}</Key>
-                    <WillShowUI>OnError</WillShowUI>
-                </ProductKey>
-                <AcceptEula>true</AcceptEula>
-            </UserData>
             <DiskConfiguration>
                 <Disk wcm:action="add">
                     <CreatePartitions>
                         <CreatePartition wcm:action="add">
-                            <Order>1</Order>
-                            <Size>260</Size>
                             <Type>EFI</Type>
+                            <Size>512</Size>
+                            <Order>1</Order>
                         </CreatePartition>
                         <CreatePartition wcm:action="add">
-                            <Order>2</Order>
-                            <Size>16</Size>
+                            <Extend>false</Extend>
                             <Type>MSR</Type>
+                            <Order>2</Order>
+                            <Size>128</Size>
                         </CreatePartition>
                         <CreatePartition wcm:action="add">
                             <Order>3</Order>
-                            <Size>2000</Size>
                             <Type>Primary</Type>
+                            <Extend>true</Extend>
                         </CreatePartition>
                     </CreatePartitions>
                     <ModifyPartitions>
                         <ModifyPartition wcm:action="add">
                             <Format>FAT32</Format>
-                            <Label>System</Label>
                             <Order>1</Order>
                             <PartitionID>1</PartitionID>
                         </ModifyPartition>
                         <ModifyPartition wcm:action="add">
-                            <Extend>true</Extend>
-                            <Format>NTFS</Format>
-                            <Label>SYSTEM</Label>
-                            <Letter>C</Letter>
                             <Order>2</Order>
+                            <PartitionID>2</PartitionID>
+                        </ModifyPartition>
+                        <ModifyPartition wcm:action="add">
+                            <Format>NTFS</Format>
+                            <Label>Windows</Label>
+                            <Order>3</Order>
                             <PartitionID>3</PartitionID>
                         </ModifyPartition>
                     </ModifyPartitions>
                     <DiskID>0</DiskID>
                     <WillWipeDisk>true</WillWipeDisk>
                 </Disk>
-                <WillShowUI>Never</WillShowUI>
             </DiskConfiguration>
             <ImageInstall>
                 <OSImage>
                     <InstallFrom>
                         <MetaData wcm:action="add">
-                            <Key>/IMAGE/INDEX</Key>
-                            <Value>${ImageIndex}</Value>
+                            <Key>/IMAGE/NAME </Key>
+                            <Value>Windows Server 2025 SERVERSTANDARD</Value>
                         </MetaData>
                     </InstallFrom>
                     <InstallTo>
                         <DiskID>0</DiskID>
                         <PartitionID>3</PartitionID>
                     </InstallTo>
+                    <WillShowUI>OnError</WillShowUI>
+                    <InstallToAvailablePartition>false</InstallToAvailablePartition>
                 </OSImage>
             </ImageInstall>
+            <UserData>
+                <AcceptEula>true</AcceptEula>
+                <ProductKey>
+                    <Key>${ProductKey}</Key>
+                    <WillShowUI>Never</WillShowUI>
+                </ProductKey>
+            </UserData>
         </component>
     </settings>
     <settings pass="specialize">
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <ComputerName>*</ComputerName>
             <TimeZone>${TimeZone}</TimeZone>
-          </component>
+        </component>
+        <component name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DoNotOpenServerManagerAtLogon>true</DoNotOpenServerManagerAtLogon>
+        </component>
     </settings>
     <settings pass="oobeSystem">
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -108,15 +114,33 @@
             </UserAccounts>
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <Description>Set Execution Policy 64 Bit</Description>
                     <Order>1</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>C:\Windows\SysWOW64\cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <Description>Set Execution Policy 32 Bit</Description>
+                    <Order>2</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell.exe -NoProfile -Command "Get-PSDrive -PSProvider 'FileSystem' | ForEach-Object { $scriptFile = Join-Path $_.Root 'bootstrap.ps1'; if (Test-Path $scriptFile) { &amp; $scriptFile } }"</CommandLine>
+                    <Description>bootstrap</Description>
+                    <Order>3</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <Order>4</Order>
                     <CommandLine>powershell.exe -ExecutionPolicy Bypass -File D:\EnableSSH.ps1"</CommandLine>
                     <Description>Enable SSH and add public key</Description>
                     <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <Order>2</Order>
-                    <CommandLine>D:\virtio-win-guest-tools.exe /install /passive /norestart</CommandLine>
-                    <Description>Install Guest Tools</Description>
+                    <CommandLine>cmd.exe /c wmic useraccount where "name='Administrator'" set PasswordExpires=FALSE</CommandLine>
+                    <Order>5</Order>
+                    <Description>Disable password expiration for Administrator user</Description>
                     <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>

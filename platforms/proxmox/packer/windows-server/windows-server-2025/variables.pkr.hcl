@@ -63,7 +63,7 @@ variable disk_storage {
   description = "Disk storage location"
 }
 
-variable disk_size_gb {
+variable disk_size {
   type        = string
   description = " Disk size including GB so <size>GB"
 }
@@ -103,7 +103,7 @@ variable administrator_password {
   default     = "P@ssw0rd1234!"
 }
 
-variable timezone {
+variable time_zone {
   type        = string
   description = "Timezone for the Windows VM"
   default     = "New Zealand Standard Time"

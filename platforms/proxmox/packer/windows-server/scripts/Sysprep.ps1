@@ -8,16 +8,15 @@ Start-Transcript -Path $logFile -Append -Force
 Write-Host "Starting Sysprep process at $(Get-Date)..."
 
 # Verify unattend.xml exists
-$unattendFile = "C:/Windows/Temp/sysprep_unattend.xml"
+$unattendFile = "C:/Windows/System32/Sysprep/unattend.xml"
 if (-not (Test-Path $unattendFile)) {
     Write-Warning "CRITICAL ERROR: unattend.xml not found at $unattendFile. Sysprep will fail!"
     Write-Host "Checking if the file was copied to another location..."
     $possibleLocations = @(
-        "C:\Windows\Temp\sysprep_unattend.xml",
+        "C:\Windows\Temp\unattend.xml",
         "C:\Windows\System32\Sysprep\unattend.xml",
-        "D:\sysprep_unattend.xml"
+        "D:\unattend.xml"
     )
-    
     foreach ($location in $possibleLocations) {
         if (Test-Path $location) {
             Write-Host "Found unattend file at: $location"

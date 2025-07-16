@@ -3,3 +3,6 @@ virtio-win-guest-tools.exe
 
 # Ignore the vioscsi disk drivers
 **/drivers/*
+
+# Allow the README file in the drivers directory
+!**/drivers/README.md
