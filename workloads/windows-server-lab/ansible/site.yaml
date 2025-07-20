@@ -1,4 +1,37 @@
-# Runs all playbooks in the playbooks directory
 ---
-- name: Configure Domain Controllers
-  import_playbook: configure-domain-controllers.yaml
+# Apply common roles to all Windows servers
+- name: Apply baseline and BGInfo to all Windows servers
+  hosts:
+    - proxmox_windows_domain_controller
+    - proxmox_windows_server
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - windows_server_baseline
+    - bginfo
+
+# Configure the Domain Controllers
+- name: Configure Windows Domain Controllers
+  hosts: proxmox_windows_domain_controller
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - domain_controllers
+
+# Configure Windows Management Server
+- name: Configure Management Servers
+  hosts: win-mgmt01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - member_server
+    - windows_admin_center
+
+# Configure Microsoft Entra Connect Server
+- name: Configure Microsoft Entra Connect Server
+  hosts: win-sync01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - member_server
+    - microsoft_entra_connect_sync

@@ -5,7 +5,7 @@
 `ansible-inventory -i inventory.proxmox.yaml --list`
 
 ## Provision the Domain Controllers 
-`ansible-playbook -i inventory.proxmox.yaml configure-domain-controllers.yaml`
+`ansible-playbook -i inventory.proxmox.yaml site.yaml`
 
 ## Configure the Member Servers
 `ansible-playbook -i inventory.proxmox.yaml configure-windows-servers.yaml`

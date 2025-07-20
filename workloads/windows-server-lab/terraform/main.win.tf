@@ -17,20 +17,22 @@ module "addc02" {
   clone_from  = "windows-server-2022"
 }
 
-# module "mec01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-sync01"
-#   description = "Microsoft Entra Connect Server"
-#   tags        = ["windows_server", "role-entra_connect_server"]
-# }
-
 module "mgmt01" {
   source      = "./modules/cloned-vm"
   vm_id       = 603
   vm_name     = "win-mgmt01"
   description = "Management Server"
   tags        = ["windows_server", "role-management_server"]
-  clone_from  = "windows-server-2025"
+  clone_from  = "windows-server-2022"
+}
+
+module "mec01" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 604
+  vm_name     = "win-sync01"
+  description = "Microsoft Entra Connect Server"
+  clone_from  = "windows-server-2022"
+  tags        = ["windows_server", "role-entra_connect_server"]
 }
 
 # module "proxy01" {
@@ -51,6 +53,7 @@ module "mgmt01" {
 #   source      = "./modules/cloned-vm"
 #   vm_name     = "win-iis01"
 #   description = "IIS Web Server"
+#   clone_from  = "windows-server-2022"
 #   tags        = ["WindowsServer", "WebServer"]
 # }
 

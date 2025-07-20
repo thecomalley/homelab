@@ -1,7 +1,7 @@
 ---
 - name: Hello World
   ansible.builtin.debug:
-    msg: "I am a {{ ansible_facts['windows_domain_role'] }} called {{ ansible_facts['hostname'] }} who's IP is {{ ansible_host }}"
+    msg: "Hello World, I am a {{ ansible_facts['windows_domain_role'] }} called {{ ansible_facts['hostname'] }} who's IP is {{ ansible_host }}"
 
 - name: Set Local Administrator Password
   ansible.windows.win_user:

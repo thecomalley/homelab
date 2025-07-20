@@ -1,0 +1,105 @@
+---
+- name: Check if static IP is assigned
+  ansible.builtin.set_fact:
+    ip_address_needs_update: "{{ static_ip is defined and static_ip != ansible_host }}"
+
+- name: Assign static IP
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding()]
+      param (
+          [String]
+          $IPAddress,
+
+          [String]
+          $DefaultGateway
+      )
+      New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress $IPAddress -PrefixLength 24 -DefaultGateway $DefaultGateway
+    parameters:
+      IPAddress: "{{ static_ip }}"
+      DefaultGateway: 10.1.5.1
+  async: 100 # Using "fire-and-forget" asynchronous execution for this task, otherwise it will always fail and timeout
+  poll: 0
+  when: ip_address_needs_update
+
+- name: Update ansible_host variable
+  ansible.builtin.set_fact:
+    ansible_host: "{{ static_ip }}"
+  when: ip_address_needs_update
+  register: static_ip_update
+
+- name: Wait for the hosts network interface to back online
+  ansible.builtin.wait_for_connection:
+    delay: 10
+    timeout: 300
+  when: ip_address_needs_update
+
+- name: Add Roles and Features
+  ansible.windows.win_feature:
+    name:
+      - AD-Domain-Services
+      - DNS
+    state: present
+    include_sub_features: true
+    include_management_tools: true
+
+- name: Configure DNS forwarders
+  ansible.windows.win_powershell:
+    script: |
+      $Forwarders = "1.1.1.1","8.8.8.8"
+      Set-DnsServerForwarder -IPAddress $Forwarders
+
+- name: Set Facts
+  ansible.builtin.set_fact:
+    primary_domain_controller_hostname: "{{ (groups['proxmox_windows_domain_controller'] | sort)[0] | default(omit) }}"
+    primary_domain_controller_ip: "{{ hostvars[(groups['proxmox_windows_domain_controller'] | sort)[0]]['ansible_host'] }}"
+
+- name: Temporarily set the DNS server to the PDC
+  ansible.windows.win_dns_client:
+    adapter_names: "*"
+    dns_servers:
+      - "{{ primary_domain_controller_ip }}"
+  when: ansible_facts['windows_domain_role'] != 'Primary domain controller' or 'Backup domain controller'
+
+- name: PDC - Create Active Directory Domain
+  microsoft.ad.domain:
+    dns_domain_name: "{{ dns_domain_name }}"
+    safe_mode_password: "{{ safe_mode_password }}"
+    reboot: true
+  when: inventory_hostname == (groups['proxmox_windows_domain_controller'] | sort)[0]
+
+- name: PDC - Promote to Domain Controller
+  microsoft.ad.domain_controller:
+    dns_domain_name: "{{ dns_domain_name }}"
+    domain_admin_user: "{{ domain_admin_user }}"
+    domain_admin_password: "{{ domain_admin_password }}"
+    safe_mode_password: "{{ safe_mode_password }}"
+    state: domain_controller
+    reboot: true
+  when: inventory_hostname == (groups['proxmox_windows_domain_controller'] | sort)[0]
+
+# Note: having issues with this task on first run but its pretty trivial to configure manually so not too worried about it
+- name: Promote Secondary Domain Controllers
+  microsoft.ad.domain_controller:
+    dns_domain_name: "{{ dns_domain_name }}"
+    domain_admin_user: "{{ domain_admin_user }}"
+    domain_admin_password: "{{ domain_admin_password }}"
+    safe_mode_password: "{{ safe_mode_password }}"
+    replication_source_dc: "{{ primary_domain_controller_hostname }}@{{ dns_domain_name }}"
+    state: domain_controller
+    reboot: true
+  when: inventory_hostname != (groups['proxmox_windows_domain_controller'] | sort)[0]
+
+- name: Configure DNS Servers
+  ansible.windows.win_dns_client:
+    adapter_names: "*"
+    dns_servers:
+      - "{{ ansible_host }}"
+      - >-
+        {{ (groups['proxmox_windows_domain_controller'] | difference([inventory_hostname]) |
+            map('extract', hostvars, 'ansible_host') | list | first) | default(omit) }}
+
+- name: Install all updates and reboot as many times as needed
+  ansible.windows.win_updates:
+    category_names: '*'
+    reboot: true
