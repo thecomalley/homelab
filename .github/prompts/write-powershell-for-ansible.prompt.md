@@ -3,7 +3,7 @@ mode: 'agent'
 tools: ['githubRepo', 'codebase']
 description: 'Write a Powershell Script to be called by an Ansible task'
 ---
-Generate a PowerShell script that is suitable for execution as an Ansible task.
+Generate a or Refactor PowerShell script that is suitable for execution as an Ansible task.
 The script must be concise, efficient, and idempotent.
 Ensure the script follows these Ansible integration rules:
     Use $Ansible variable to set Result, Changed, Failed, Diff, or access Tmpdir.

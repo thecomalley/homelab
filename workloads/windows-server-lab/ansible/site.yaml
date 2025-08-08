@@ -1,21 +1,12 @@
 ---
-# Apply common roles to all Windows servers
-- name: Apply baseline and BGInfo to all Windows servers
-  hosts:
-    - proxmox_windows_domain_controller
-    - proxmox_windows_server
-  vars_files:
-    - vars/windows_lab_vars.yml
-  roles:
-    - windows_server_baseline
-    - bginfo
-
 # Configure the Domain Controllers
 - name: Configure Windows Domain Controllers
   hosts: proxmox_windows_domain_controller
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
+    - windows_server_baseline
+    - bginfo
     - domain_controllers
 
 # Configure Windows Management Server
@@ -24,6 +15,8 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
+    - windows_server_baseline
+    - bginfo
     - member_server
     - windows_admin_center
 
@@ -33,5 +26,28 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
+    - windows_server_baseline
+    - bginfo
     - member_server
     - microsoft_entra_connect_sync
+
+# Configure Microsoft Entra Private Network Connector
+- name: Configure Microsoft Entra Private Network Connector
+  hosts: win-proxy01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - windows_server_baseline
+    - bginfo
+    - member_server
+
+# Configure Integration Runtime
+- name: Configure Self-Hosted Integration Runtime
+  hosts: win-ir01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
+    - windows_server_baseline
+    - bginfo
+    - member_server
+    - microsoft_integration_runtime

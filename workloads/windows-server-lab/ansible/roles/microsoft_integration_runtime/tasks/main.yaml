@@ -1,0 +1,30 @@
+---
+- name: Create temporary directory for integration runtime installer
+  win_file:
+    path: C:\temp\integration_runtime
+    state: directory
+
+- name: Copy integration runtime MSI installer
+  win_copy:
+    src: IntegrationRuntime_5.54.9271.2.msi
+    dest: C:\temp\integration_runtime\IntegrationRuntime.msi
+
+- name: Install Microsoft Integration Runtime
+  ansible.windows.win_package:
+    path: C:\temp\integration_runtime\IntegrationRuntime.msi
+    state: present
+    arguments:
+      - /quiet
+      - /passive
+
+- name: Get dmgcmd.exe path
+  win_reg_stat:
+    path: HKLM:\Software\Microsoft\DataTransfer\DataManagementGateway\ConfigurationManager
+    name: DiacmdPath
+  register: reg_out
+
+- set_fact:
+    cmd_path: "{{ reg_out.value }}"
+
+- name: Register Microsoft Integration Runtime
+  win_command: '"{{ cmd_path }}" -k "{{ microsoft_integration_runtime_auth_key }}"'

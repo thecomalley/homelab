@@ -59,11 +59,6 @@
     data: 1
     type: dword
 
-- name: Install all updates and reboot as many times as needed
-  ansible.windows.win_updates:
-    category_names: '*'
-    reboot: true
-
   # HideFirstRunExperience for Edge
 - name: Hide First Run Experience for Edge
   ansible.windows.win_regedit:
@@ -71,3 +66,8 @@
     name: HideFirstRunExperience
     data: 1
     type: dword
+
+- name: Install all updates and reboot as many times as needed
+  ansible.windows.win_updates:
+    category_names: '*'
+    reboot: true

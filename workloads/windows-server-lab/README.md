@@ -8,17 +8,17 @@ This repository contains a Windows Server lab setup using Terraform, Proxmox, an
 
 ## Server Inventory
 
-| Server       | Role                               |
-| ------------ | ---------------------------------- |
-| win-dc01     | Active Directory Domain Controller |
-| win-dc02     | Active Directory Domain Controller |
-| win-mec01    | Microsoft Entra Connect Server     |
-| win-mgmt01   | Management Server                  |
-| win-proxy01  | Entra App Proxy Connector          |
-| win-datagw01 | On-Premises Data Gateway           |
-| win-iis01    | IIS Web Server                     |
-| win-sql01    | SQL Server                         |
-| win-ir01     | Self-Hosted Integration Runtime    |
+| Server       | Role                                      |
+| ------------ | ----------------------------------------- |
+| win-dc01     | Active Directory Domain Controller        |
+| win-dc02     | Active Directory Domain Controller        |
+| win-sync01   | Microsoft Entra Connect                   |
+| win-mgmt01   | Management Server                         |
+| win-proxy01  | Microsoft Entra private network connector |
+| win-datagw01 | On-Premises Data Gateway                  |
+| win-iis01    | IIS Web Server                            |
+| win-sql01    | SQL Server                                |
+| win-ir01     | Self-Hosted Integration Runtime           |
 
 ## Architecture Overview
 

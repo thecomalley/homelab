@@ -35,12 +35,23 @@ module "mec01" {
   tags        = ["windows_server", "role-entra_connect_server"]
 }
 
-# module "proxy01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-proxy01"
-#   description = "Entra App Proxy Connector"
-#   tags        = ["windows_server", "role-entra_app_proxy_connector"]
-# }
+module "proxy01" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 605
+  vm_name     = "win-proxy01"
+  description = "Entra App Proxy Connector"
+  clone_from  = "windows-server-2022"
+  tags        = ["windows_server", "role-entra_app_proxy_connector"]
+}
+
+module "ir01" {
+  source      = "./modules/cloned-vm"
+  vm_id       = 606
+  vm_name     = "win-ir01"
+  description = "Self-Hosted Integration Runtime"
+  clone_from  = "windows-server-2022"
+  tags        = ["windows_server", "role-integration_runtime"]
+}
 
 # module "datagw01" {
 #   source      = "./modules/cloned-vm"
@@ -62,11 +73,4 @@ module "mec01" {
 #   vm_name     = "win-sql01"
 #   description = "SQL Server"
 #   tags        = ["WindowsServer", "SqlServer"]
-# }
-
-# module "ir01" {
-#   source      = "./modules/cloned-vm"
-#   vm_name     = "win-ir01"
-#   description = "Self-Hosted Integration Runtime"
-#   tags        = ["WindowsServer", "IntegrationRuntime"]
 # }
