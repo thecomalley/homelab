@@ -1,2 +1,5 @@
 vars/*.yml
 vars/*.yaml
+
+host_vars/*.yml
+host_vars/*.yaml
