@@ -8,6 +8,7 @@
     - windows_server_baseline
     - bginfo
     - domain_controllers
+    - azure_arc
 
 # Configure Windows Management Server
 - name: Configure Management Servers
@@ -19,6 +20,7 @@
     - bginfo
     - member_server
     - windows_admin_center
+    - azure_arc
 
 # Configure Microsoft Entra Connect Server
 - name: Configure Microsoft Entra Connect Server
@@ -30,6 +32,7 @@
     - bginfo
     - member_server
     - microsoft_entra_connect_sync
+    - azure_arc
 
 # Configure Microsoft Entra Private Network Connector
 - name: Configure Microsoft Entra Private Network Connector
@@ -40,6 +43,8 @@
     - windows_server_baseline
     - bginfo
     - member_server
+    - microsoft_entra_private_network_connector
+    - azure_arc
 
 # Configure Integration Runtime
 - name: Configure Self-Hosted Integration Runtime
@@ -51,3 +56,4 @@
     - bginfo
     - member_server
     - microsoft_integration_runtime
+    - azure_arc

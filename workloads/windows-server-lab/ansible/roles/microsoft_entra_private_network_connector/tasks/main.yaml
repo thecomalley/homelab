@@ -1,1 +1,17 @@
 ---
+- name: Create temporary directory for installer
+  win_file:
+    path: C:\temp\ansible
+    state: directory
+
+- name: Copy Microsoft Entra private network connector MSI installer
+  win_copy:
+    src: MicrosoftEntraPrivateNetworkConnectorInstaller.exe
+    dest: C:\temp\ansible\MicrosoftEntraPrivateNetworkConnectorInstaller.exe
+
+- name: Install Microsoft Integration Runtime
+  ansible.windows.win_package:
+    path: C:\temp\ansible\MicrosoftEntraPrivateNetworkConnectorInstaller.exe
+    state: present
+    arguments:
+      - /q
