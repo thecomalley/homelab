@@ -23,7 +23,8 @@
     name: DiacmdPath
   register: reg_out
 
-- set_fact:
+- name: Set cmd_path fact
+  ansible.builtin.set_fact:
     cmd_path: "{{ reg_out.value }}"
 
 - name: Register Microsoft Integration Runtime
