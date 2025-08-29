@@ -25,3 +25,13 @@ variable "clone_from" {
   description = "The name of the VM to clone from"
   type        = string
 }
+
+variable "target_node" {
+  description = "The Proxmox node to create the VM on"
+  type        = string
+}
+
+variable "storage_pool" {
+  description = "The Proxmox storage pool to use for the VM disk"
+  type        = string
+}
