@@ -68,3 +68,11 @@ services:
     tmpfs:
       - /run:exec,size=64M
       - /var/log
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    volumes:
+      - /opt/appdata/uptime-kuma:/app/data
+    ports:
+      - 3001:3001
+    restart: unless-stopped
