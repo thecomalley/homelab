@@ -12,9 +12,9 @@ packer {
 }
 
 source "proxmox-iso" "windows_server_2022" {
-  node = "pve"
+  node = var.node
 
-  vm_name = "windows-server-2022"
+  vm_name              = "windows-server-2022"
   vm_id                = 2022
   template_name        = "windows-server-2022"
   template_description = <<EOF
@@ -53,7 +53,7 @@ Created by Packer on ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}
 
   scsi_controller = "virtio-scsi-pci"
   additional_iso_files {
-    iso_storage_pool = "local"
+    iso_storage_pool = var.iso_storage_pool
     unmount          = true
     cd_files = [
       "../drivers/2022/*",
@@ -82,7 +82,7 @@ Created by Packer on ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}
 
   # Storage
   disks {
-    storage_pool = "nvme"
+    storage_pool = var.disk_storage
     # storage_pool_type = "btrfs"
     type       = "scsi"
     disk_size  = var.disk_size_gb
