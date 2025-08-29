@@ -1,0 +1,10 @@
+---
+- name: Patch Windows Servers
+  hosts: proxmox_windows_domain_controller, windows_server
+  vars_files:
+    - vars/windows_lab_vars.yml
+  tasks:
+    - name: Install Updates
+      ansible.windows.win_updates:
+        category_names: '*'
+        reboot: true
