@@ -1,44 +1,61 @@
 # Proxmox Homelab Documentation
 
-This document serves as both reference and as-built documentation for the Proxmox Virtual Environment (PVE) implementation in the homelab.
+| **Host**          | **Hardware**             | **CPU**  | **RAM** | **NVMe** | **SSD**   |
+| ----------------- | ------------------------ | -------- | ------- | -------- | --------- |
+| pve01.proxmox.tld | HP EliteDesk 800 G2 Mini | i5 6500T | 32GB    | 256 GB   | 400GB SSD |
+| pve02.proxmox.tld | HP EliteDesk 800 G2 Mini | i5 6500T | 8GB     | 256 GB   | 400GB SSD |
 
-## Environment Overview
 
-### Current Infrastructure
+## Proxmox Installer Runbook
+- Boot from Proxmox VE ISO (USB is lying around somewhere)
+- Accept EULA
+- Select target disk: /dev/nvme0n1
+  - swapsize: 8 GB
+  - maxroot: 32 GB
+  - minfree: 4 GB
+  - maxvz: *Leave blank to use all remaining space for VMs/*Containers*
+- Configure Country/Time Zone/Keyboard
+- Set root password and email
+- Configure Network:
 
-| **Host** | **Hardware**             | **CPU** | **RAM** | **Storage** | **IP Address** | **Role** |
-| -------- | ------------------------ | ------- | ------- | ----------- | -------------- | -------- |
-| pve01    | HP EliteDesk 800 G2 Mini | 4 cores | 16GB    | 500GB SSD   | 192.168.1.x    | Host     |
+## Post-Install Runbook
 
-## Datacenter Configuration
+### On Each Host
+1. Run [Proxmox VE Post Install](https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install)
+2. Rename the local-lvm to local-nvme
+   1. `nano /etc/pve/storage.cfg` Change `local-lvm` to `local-nvme`
+3. Provision the 400GB SSD as `local-ssd`
+    1. `pvcreate /dev/sda`
+    2. `vgcreate vg-ssd /dev/sda`
+    3. `lvcreate -l 95%FREE -T vg-ssd/lv-ssd`
+    4. `nano /etc/pve/storage.cfg` Add:
+       ```
+       lvmthin: local-ssd
+           thinpool lv-ssd
+           vgname vg-ssd
+           content images,rootdir,iso,vztmpl
+           maxfiles 5
+       ```
+4. Configure Cluster
+5. on each node `apt install corosync-qdevice -y`
 
-### Completed Tasks
-- [x] Configure Metric Server to point to InfluxDB (Grafana for visualization)
+### Datacenter Tasks
+1. `pvecm qdevice setup <pi-ip>` to set up quorum device
+2. Configure NAS for shared NFS storage
+3. Configure SSL settings, ACME, Let's Encrypt & Cloudflare DNS
+4. Configure Notifications (See Below)
 
-### Pending Tasks
-- [ ] Configure a Cluster (Pending additional hosts)
-- [ ] Configure High Availability (Pending additional hosts)
-- [ ] Implement central storage solution
+### Pushover Notifications (Webhook)
 
-## New Host Setup
-
-### Initial Configuration Checklist
-- [ ] Update firmware/BIOS to latest version
-- [ ] Install Proxmox VE (latest stable version)
-- [ ] Configure network settings
-- [ ] Enable Notifications
-- [ ] Configure Update Repositories
-- [ ] Configure DNS settings
-- [ ] Integrate with backup solution
-
-### Notifications Setup
-Pushover is used for system notifications via webhooks:
-
-**Configuration Details:**
-- **Method/URL:** POST https://api.pushover.net/1/messages.json
-- **Content-Type:** application/json
-
-**Request Body Template:**
+| Setting       | Value                                         |
+| ------------- | --------------------------------------------- |
+| Endpoint Name | Pushover                                      |
+| Method/URL    | POST https://api.pushover.net/1/messages.json |
+| Headers       | `Content-Type`: `application/json`            |
+| Body          | *See below*                                   |
+| Secrets       | apikey <br> userkey                           |
+ 
+Body Template:
 ```json
 {
   "token": "{{ secrets.apikey }}",
@@ -49,14 +66,3 @@ Pushover is used for system notifications via webhooks:
   "timestamp": "{{ timestamp }}"
 }
 ```
-
-### Repository Configuration
-1. Enterprise repository should be disabled unless subscription is active
-2. Configure no-subscription repository:
-   - Follow instructions at: https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install
-3. Add the pve-no-subscription repo for updates
-
-### DNS Configuration
-- Add the host to the DNS server with both forward and reverse lookups
-- Ensure hostname resolution works correctly within the network
-- Recommended: Set up a dedicated DNS record for Proxmox web interface
