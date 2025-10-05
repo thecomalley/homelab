@@ -3,7 +3,7 @@ resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/ansible/inventory.yml.tpl", {
     unraid_hostname = var.unraid_hostname,
     unraid_username = var.unraid_username,
-    services        = keys(var.apps)
+    services        = concat(var.external_apps, var.internal_apps),
   })
 }
 

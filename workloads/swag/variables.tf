@@ -1,11 +1,3 @@
-variable "apps" {
-  description = "A map of applications to be configured with SWAG, each with external and internal access settings"
-  type = map(object({
-    external = optional(bool, true) # Default to true for external access
-    internal = optional(bool, true) # Default to true for internal access
-  }))
-}
-
 variable "domain_name" {
   description = "The domain name"
   type        = string
@@ -49,4 +41,14 @@ variable "swag_external_cname" {
 variable "swag_internal_ip" {
   description = "The internal IP address of the SWAG server"
   type        = string
+}
+
+variable "external_apps" {
+  description = "A list of applications to be configured with external access"
+  type        = list(string)
+}
+
+variable "internal_apps" {
+  description = "A list of applications to be configured with internal access"
+  type        = list(string)
 }
