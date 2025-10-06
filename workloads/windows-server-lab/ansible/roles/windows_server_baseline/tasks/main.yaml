@@ -1,7 +1,7 @@
 ---
-- name: Hello World
+- name: Hello Ansible
   ansible.builtin.debug:
-    msg: "Hello World, I am a {{ ansible_facts['windows_domain_role'] }} called {{ ansible_facts['hostname'] }} who's IP is {{ ansible_host }}"
+    msg: "Hello Ansible, I am a {{ ansible_facts['windows_domain_role'] }} called {{ ansible_facts['hostname'] }} who's IP is {{ ansible_host }}"
 
 - name: Set Local Administrator Password
   ansible.windows.win_user:
@@ -67,7 +67,27 @@
     data: 1
     type: dword
 
-# - name: Install all updates and reboot as many times as needed
-#   ansible.windows.win_updates:
-#     category_names: '*'
-#     reboot: true
+- name: Disable IPv6 on Windows
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
+    name: DisabledComponents
+    data: 0xff
+    type: dword
+
+- name: Configure Windows Update settings
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+    state: present
+    data:
+      - name: AUOptions
+        type: dword
+        data: 4
+      - name: ScheduledInstallDay
+        type: dword
+        data: 0
+      - name: ScheduledInstallTime
+        type: dword
+        data: 3
+      - name: NoAutoUpdate
+        type: dword
+        data: 0
