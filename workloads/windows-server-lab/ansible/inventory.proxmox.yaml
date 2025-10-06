@@ -12,7 +12,11 @@ keyed_groups:
     prefix: proxmox
     separator: "_"
 compose:
-  ansible_host: proxmox_agent_interfaces[0]['ip-addresses'][1].split('/')[0] if proxmox_agent_interfaces is defined
+  ansible_host: >-
+    (proxmox_agent_interfaces[0]['ip-addresses'] | 
+     map('regex_replace', '/.*', '') | 
+     select('match', '^(?!127\.|169\.254\.|::1)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$') | 
+     first) if proxmox_agent_interfaces is defined and proxmox_agent_interfaces|length > 0 else ''
   ansible_user: "'Administrator'"
   ansible_connection: "'ssh'"
   ansible_shell_type: "'powershell'"
