@@ -1,6 +1,5 @@
 ---
-# Configure the Domain Controllers
-- name: Configure Windows Domain Controllers
+- name: Configure Domain Controllers
   hosts: proxmox_windows_domain_controller
   vars_files:
     - vars/windows_lab_vars.yml
@@ -10,15 +9,21 @@
     - domain_controllers
     - azure_arc
 
-# Configure Windows Management Server
-- name: Configure Management Servers
-  hosts: win-mgmt01
+- name: Configure Windows Servers (Baseline only)
+  hosts: proxmox_windows_server
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
     - windows_server_baseline
     - bginfo
     - member_server
+
+# Role specific configurations
+- name: Configure Management Servers
+  hosts: win-mgmt01
+  vars_files:
+    - vars/windows_lab_vars.yml
+  roles:
     - windows_admin_center
     - azure_arc
 
@@ -28,9 +33,6 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
-    - windows_server_baseline
-    - bginfo
-    - member_server
     - microsoft_entra_connect_sync
     - azure_arc
 
@@ -40,9 +42,6 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
-    - windows_server_baseline
-    - bginfo
-    - member_server
     - microsoft_entra_private_network_connector
     - azure_arc
 
@@ -52,8 +51,5 @@
   vars_files:
     - vars/windows_lab_vars.yml
   roles:
-    - windows_server_baseline
-    - bginfo
-    - member_server
     - microsoft_integration_runtime
     - azure_arc
