@@ -1,64 +1,15 @@
-resource "azurerm_resource_group" "opnsense" {
-  name     = "oma-opnsense-prd-aue-rg"
-  location = "AustraliaEast" # Change to your preferred Azure region
-}
-
-resource "azurerm_virtual_network" "opnsense" {
-  name                = "oma-opnsense-prd-aue-vnet"
-  address_space       = ["10.10.0.0/16"]
-  location            = azurerm_resource_group.opnsense.location
-  resource_group_name = azurerm_resource_group.opnsense.name
-}
-
-resource "azurerm_subnet" "internal" {
-  name                 = "oma-opnsense-prd-aue-internal-snet"
-  resource_group_name  = azurerm_resource_group.opnsense.name
-  virtual_network_name = azurerm_virtual_network.opnsense.name
-  address_prefixes     = ["10.10.1.0/24"]
-}
-
-resource "azurerm_subnet" "external" {
-  name                 = "oma-opnsense-prd-aue-external-snet"
-  resource_group_name  = azurerm_resource_group.opnsense.name
-  virtual_network_name = azurerm_virtual_network.opnsense.name
-  address_prefixes     = ["10.10.0.0/24"]
-}
-
-resource "azurerm_network_security_group" "external" {
-  name                = "oma-opnsense-prd-aue-external-snet-nsg"
-  location            = azurerm_resource_group.opnsense.location
-  resource_group_name = azurerm_resource_group.opnsense.name
-
-  security_rule {
-    name                       = "AllowSSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-}
-
-resource "azurerm_subnet_network_security_group_association" "external" {
-  subnet_id                 = azurerm_subnet.external.id
-  network_security_group_id = azurerm_network_security_group.external.id
-}
-
 resource "azurerm_public_ip" "external" {
-  name                = "opnsense-prd-aue01-external-pip"
-  location            = azurerm_resource_group.opnsense.location
-  resource_group_name = azurerm_resource_group.opnsense.name
+  name                = "OPNsense01-external-pip"
+  location            = data.azurerm_resource_group.hub.location
+  resource_group_name = data.azurerm_resource_group.hub.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_network_interface" "nic_external" {
-  name                  = "opnsense-prd-aue01-external-nic"
-  location              = azurerm_resource_group.opnsense.location
-  resource_group_name   = azurerm_resource_group.opnsense.name
+  name                  = "OPNsense01-external-nic"
+  location              = data.azurerm_resource_group.hub.location
+  resource_group_name   = data.azurerm_resource_group.hub.name
   ip_forwarding_enabled = true
 
   ip_configuration {
@@ -70,9 +21,9 @@ resource "azurerm_network_interface" "nic_external" {
 }
 
 resource "azurerm_network_interface" "nic_internal" {
-  name                  = "opnsense-prd-aue01-internal-nic"
-  location              = azurerm_resource_group.opnsense.location
-  resource_group_name   = azurerm_resource_group.opnsense.name
+  name                  = "OPNsense01-internal-nic"
+  location              = data.azurerm_resource_group.hub.location
+  resource_group_name   = data.azurerm_resource_group.hub.name
   ip_forwarding_enabled = true
 
   ip_configuration {
@@ -85,11 +36,16 @@ resource "azurerm_network_interface" "nic_internal" {
 # Note: Replace the image below with an official OpenSense image if available in Azure Marketplace.
 # For demo, using Ubuntu. You may need to bring your own OpenSense image (custom VHD) for production.
 resource "azurerm_linux_virtual_machine" "opnsense" {
-  name                = "opnsense-prd-aue01"
-  resource_group_name = azurerm_resource_group.opnsense.name
-  location            = azurerm_resource_group.opnsense.location
-  size                = "Standard_B2ats_v2"
+  name                = "OPNsense01"
+  resource_group_name = data.azurerm_resource_group.hub.name
+  location            = data.azurerm_resource_group.hub.location
+  size                = "Standard_F2ams_v6" # Change to Standard_B1ls once provisioned
   admin_username      = "azureuser"
+
+  # Spot instance configuration
+  priority        = "Spot"
+  eviction_policy = "Deallocate"
+  max_bid_price   = 0.0132 # Price of Standard_B1s in Australia East as of 2025-09-03
 
   network_interface_ids = [
     azurerm_network_interface.nic_external.id,
@@ -103,15 +59,15 @@ resource "azurerm_linux_virtual_machine" "opnsense" {
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "StandardSSD_LRS"
-    name                 = "opnsense-osdisk"
+    storage_account_type = "Premium_LRS" # Change to Standard_SSD once provisioned
+    name                 = "OPNsense01-osdisk"
   }
 
   source_image_reference {
     publisher = "thefreebsdfoundation"
     offer     = "freebsd-14_2"
     sku       = "14_2-release-zfs"
-    version   = "latest"
+    version   = "14.2.0"
   }
 
   plan {

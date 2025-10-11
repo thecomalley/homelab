@@ -66,3 +66,14 @@ Body Template:
   "timestamp": "{{ timestamp }}"
 }
 ```
+
+## iGPU Passthrough for VMs (So Kids can play Minecraft :D)
+
+- Ensure Intel VT-d & VT-x are enabled in BIOS
+- Get device IDs: lspci -nn
+  - pve01: 00:02.0 VGA compatible controller [0300]: Intel Corporation HD Graphics 530 [8086:1912] (rev 06)
+  - pve02: 00:02.0 VGA compatible controller [0300]: Intel Corporation HD Graphics 530 [8086:1912] (rev 06)
+- Enable IOMMU in GRUB
+  - `nano /etc/default/grub`
+  - `GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt"`
+- Verify that IOMMU is enabled by running `dmesg | grep -e DMAR -e IOMMU` and looking for a line indicating it is enabled
