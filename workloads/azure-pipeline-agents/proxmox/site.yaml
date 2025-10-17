@@ -1,0 +1,128 @@
+---
+- name: Configure Azure DevOps Self-Hosted Agents
+  hosts: agents
+  become: true
+  vars:
+    az_agent_server_url: 'https://dev.azure.com/malleynet365dev/'
+    az_agent_pat: "{{ vault_az_agent_pat | default(lookup('env', 'AZ_AGENT_PAT')) }}"
+    az_agent_pool_name: pve-self-hosted-agents
+    az_agent_version: 4.261.0
+    az_agent_user: az-agent
+    az_agent_directory: /opt/az-agent/
+    az_agent_url: 'https://download.agent.dev.azure.com/agent/{{ az_agent_version }}/vsts-agent-linux-x64-{{ az_agent_version }}.tar.gz'
+  tasks:
+    - name: Validate that PAT is provided
+      ansible.builtin.fail:
+        msg: 'Azure DevOps PAT must be provided via vault_az_agent_pat variable or AZ_AGENT_PAT environment variable'
+      when: az_agent_pat == ""
+
+    - name: Update package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      become: true
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - qemu-guest-agent
+          - curl
+          - wget
+          - tar
+          - libicu-dev
+          - pipx
+        state: present
+      become: true
+
+    - name: Create user for agent
+      ansible.builtin.user:
+        name: '{{ az_agent_user }}'
+        create_home: true
+        shell: /bin/bash
+      become: true
+
+    - name: Create directory
+      ansible.builtin.file:
+        path: '{{ az_agent_directory }}'
+        state: directory
+        mode: '0755'
+        owner: '{{ az_agent_user }}'
+        group: '{{ az_agent_user }}'
+      become: true
+
+    - name: Download and unarchive agent
+      ansible.builtin.unarchive:
+        src: '{{ az_agent_url }}'
+        dest: '{{ az_agent_directory }}'
+        owner: '{{ az_agent_user }}'
+        group: '{{ az_agent_user }}'
+        remote_src: true
+        creates: '{{ az_agent_directory }}/bin/Agent.Listener'
+      become: true
+
+    - name: Check if agent is already configured
+      ansible.builtin.stat:
+        path: '{{ az_agent_directory }}/.agent'
+      register: agent_configured
+
+    - name: Configure agent
+      ansible.builtin.shell: |
+        cd {{ az_agent_directory }}
+        sudo -u {{ az_agent_user }} ./config.sh --unattended \
+          --url {{ az_agent_server_url }} --auth pat --token {{ az_agent_pat }} \
+          --pool {{ az_agent_pool_name }}
+      become: true
+      args:
+        creates: '{{ az_agent_directory }}/.agent'
+      when: not agent_configured.stat.exists
+
+    - name: Check if agent service file exists (normal name)
+      ansible.builtin.stat:
+        path: '/etc/systemd/system/vsts.agent.malleynet365dev.pve-self-hosted-agents.{{ ansible_hostname }}.service'
+      register: service_file_check_normal
+
+    - name: Check if agent service file exists (escaped name)
+      ansible.builtin.find:
+        paths: '/etc/systemd/system/'
+        patterns: 'vsts.agent.malleynet365dev.*agent*.service'
+        use_regex: false
+      register: service_file_check_escaped
+
+    - name: Install agent service
+      ansible.builtin.command: './svc.sh install {{ az_agent_user }}'
+      become: true
+      args:
+        chdir: '{{ az_agent_directory }}'
+      when: not service_file_check_normal.stat.exists and service_file_check_escaped.files | length == 0
+      changed_when: true
+      failed_when: false
+      register: service_install_result
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+      become: true
+      when: service_install_result is defined and service_install_result is changed
+
+    - name: Start and enable agent service using native systemd module
+      ansible.builtin.systemd:
+        name: '{{ service_file_check_escaped.files[0].path | basename }}'
+        enabled: true
+        state: started
+        daemon_reload: true
+      become: true
+      when: service_file_check_escaped.files | length > 0
+
+    - name: Verify agent service status
+      ansible.builtin.systemd:
+        name: '{{ service_file_check_escaped.files[0].path | basename }}'
+      register: agent_service_status
+      when: service_file_check_escaped.files | length > 0
+
+    - name: Display agent status
+      ansible.builtin.debug:
+        msg:
+          - "Agent service: {{ service_file_check_escaped.files[0].path | basename if service_file_check_escaped.files | length > 0 else 'Not found' }}"
+          - "Status: {{ agent_service_status.status.ActiveState | default('Unknown') }}"
+          - "Enabled: {{ agent_service_status.status.UnitFileState | default('Unknown') }}"
+      when: service_file_check_escaped.files | length > 0
