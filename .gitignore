@@ -47,6 +47,8 @@ terraform.rc
 inventory.yml
 inventory.ini
 
+!workloads/rpi3b/inventory.yml
+
 # Ignore .env files
 .env
 

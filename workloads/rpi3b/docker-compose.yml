@@ -1,20 +1,5 @@
 ---
 services:
-  adguardhome:
-    container_name: adguardhome
-    image: adguard/adguardhome:latest
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
-      - "443:443/udp"
-      - "3000:3000/tcp"
-    volumes:
-      - /opt/appdata/adguardhome/work/adguard/work:/opt/adguardhome/work
-      - /opt/appdata/adguardhome/work/adguard/conf:/opt/adguardhome/conf
-    restart: unless-stopped
-
   ultrafeeder:
     image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
     container_name: ultrafeeder
@@ -68,11 +53,3 @@ services:
     tmpfs:
       - /run:exec,size=64M
       - /var/log
-
-  uptime-kuma:
-    image: louislam/uptime-kuma:latest
-    volumes:
-      - /opt/appdata/uptime-kuma:/app/data
-    ports:
-      - 3001:3001
-    restart: unless-stopped

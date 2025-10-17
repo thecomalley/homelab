@@ -12,4 +12,7 @@ This is a standalone Raspberry Pi 3 Model B that is used to run a few services. 
 ## Ansible Configuration
 
 ### Running Locally
-1. Run Ansible: `ansible-playbook -i hosts.yml playbook.yml`
+1. Run Ansible: `ansible-playbook -i inventory.yml playbook.yml`
+
+on osx run to prevent ERROR! A worker was found in a dead state run:
+`export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`

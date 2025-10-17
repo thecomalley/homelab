@@ -4,12 +4,29 @@
 
   vars:
     appdata: /opt/appdata
+    # Azure Key Vault lookups
+    azure_keyvault_url: 'https://oma-homelab-dev-nzn-kv.vault.azure.net/'
+    readsb_lat: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'READSB-LAT', vault_url=azure_keyvault_url) }}"
+    readsb_lon: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'READSB-LON', vault_url=azure_keyvault_url) }}"
+    readsb_alt: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'READSB-ALT', vault_url=azure_keyvault_url) }}"
+    fr24key: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'FR24KEY', vault_url=azure_keyvault_url) }}"
+    piaware_feeder_id: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'PIAWARE-FEEDER-ID', vault_url=azure_keyvault_url) }}"
 
   pre_tasks:
+    - name: Debug the retrieved secrets
+      ansible.builtin.debug:
+        msg:
+          - 'READSB_LAT: {{ readsb_lat }}'
+          - 'READSB_LON: {{ readsb_lon }}'
+          - 'READSB_ALT: {{ readsb_alt }}'
+          - 'FR24KEY: {{ fr24key }}'
+          - 'PIAWARE_FEEDER_ID: {{ piaware_feeder_id }}'
+
     - name: Perform a apt-get update
       ansible.builtin.apt:
-        upgrade: "yes"
+        upgrade: 'yes'
         update_cache: true
+      become: true
 
     - name: Check if a reboot is required.
       ansible.builtin.stat:
@@ -25,42 +42,47 @@
       ansible.builtin.apt:
         autoremove: true
 
-  # roles:
-  #   - geerlingguy.docker
+  roles:
+    - geerlingguy.docker
 
   tasks:
     - name: Check if Docker Compose File exists
       ansible.builtin.stat:
-        path: "{{ appdata }}/docker-compose.yml"
+        path: '{{ appdata }}/docker-compose.yml'
       register: docker_compose_file
 
     - name: Tear down existing services if they exist
       community.docker.docker_compose_v2:
-        project_src: "{{ appdata }}"
+        project_src: '{{ appdata }}'
         state: absent
       when: docker_compose_file.stat.exists
 
     - name: Create appdata directory
       ansible.builtin.file:
-        path: "{{ appdata }}"
+        path: '{{ appdata }}'
         state: directory
         mode: '0755'
 
     - name: Copy Compose file
       ansible.builtin.copy:
         src: docker-compose.yml
-        dest: "{{ appdata }}/docker-compose.yml"
+        dest: '{{ appdata }}/docker-compose.yml'
         mode: '0644'
 
-    - name: Copy .env file
+    - name: Create .env file from Ansible vars
       ansible.builtin.copy:
-        src: .env
-        dest: "{{ appdata }}/.env"
+        dest: '{{ appdata }}/.env'
         mode: '0644'
+        content: |
+          READSB_LAT="{{ readsb_lat }}"
+          READSB_LON="{{ readsb_lon }}"
+          READSB_ALT="{{ readsb_alt }}"
+          FR24KEY="{{ fr24key }}"
+          PIAWARE_FEEDER_ID="{{ piaware_feeder_id }}"
 
     - name: Docker Compose up
       community.docker.docker_compose_v2:
-        project_src: "{{ appdata }}"
+        project_src: '{{ appdata }}'
 
     - name: Delete old containers
       community.docker.docker_prune:
@@ -72,5 +94,5 @@
 
     - name: Delete .env file
       ansible.builtin.file:
-        path: "{{ appdata }}/.env"
+        path: '{{ appdata }}/.env'
         state: absent

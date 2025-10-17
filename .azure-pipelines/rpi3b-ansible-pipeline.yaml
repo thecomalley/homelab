@@ -4,6 +4,8 @@ pool: pve-self-hosted-agents
 
 variables:
   ansibleVersion: '6.0.0'
+  # Uncomment and set this in Azure DevOps variable groups for password auth
+  # rpi_password: $(RPI_PASSWORD)
 
 steps:
 - checkout: self
@@ -22,18 +24,23 @@ steps:
     ansible-galaxy collection list
   displayName: 'Verify Ansible installation'
 
-# - task: DownloadSecureFile@1
-#   name: ansibleSSHKey
-#   displayName: 'Download SSH private key'
-#   inputs:
-#     secureFile: 'rpi3b-ssh-key'
+- task: DownloadSecureFile@1
+  name: ansibleSSHKey
+  displayName: 'Download SSH private key'
+  inputs:
+    secureFile: 'rpi3b-ssh-key'
 
-# - script: |
-#     mkdir -p ~/.ssh
-#     cp $(ansibleSSHKey.secureFilePath) ~/.ssh/id_rsa
-#     chmod 600 ~/.ssh/id_rsa
-#     ssh-keyscan -H 10.5.5.62 >> ~/.ssh/known_hosts
-#   displayName: 'Setup SSH key'
+- script: |
+    mkdir -p ~/.ssh
+    cp $(ansibleSSHKey.secureFilePath) ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+    ssh-keyscan -H 10.5.5.61 >> ~/.ssh/known_hosts
+  displayName: 'Setup SSH key'
+
+- script: |
+    cd workloads/rpi3b
+    ansible all -i inventory.yml -m ping
+  displayName: 'Test Ansible connection'
 
 - task: AzureCLI@2
   displayName: 'Ansible dry run (check mode)'
