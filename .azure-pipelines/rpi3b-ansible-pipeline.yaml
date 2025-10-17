@@ -1,0 +1,84 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - workloads/rpi3b/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.9'
+  ansibleVersion: '6.0.0'
+
+stages:
+- stage: ValidateAndDeploy
+  displayName: 'Validate and Deploy to RPi3B'
+  jobs:
+  - job: AnsibleDeploy
+    displayName: 'Run Ansible Playbook'
+    steps:
+    - checkout: self
+      displayName: 'Checkout repository'
+
+    - task: UsePythonVersion@0
+      displayName: 'Set Python version'
+      inputs:
+        versionSpec: '$(pythonVersion)'
+        addToPath: true
+
+    - script: |
+        sudo apt update
+        sudo apt install -y pipx
+        pipx install ansible==$(ansibleVersion)
+        pipx inject ansible community.docker azure-identity azure-keyvault-secrets
+        ansible-galaxy collection install community.docker
+        ansible-galaxy collection install azure.azcollection
+        ansible-galaxy install geerlingguy.docker
+      displayName: 'Install Ansible and collections'
+
+    - script: |
+        ansible --version
+        ansible-galaxy collection list
+      displayName: 'Verify Ansible installation'
+
+    - task: DownloadSecureFile@1
+      name: ansibleSSHKey
+      displayName: 'Download SSH private key'
+      inputs:
+        secureFile: 'rpi3b-ssh-key'
+
+    - script: |
+        mkdir -p ~/.ssh
+        cp $(ansibleSSHKey.secureFilePath) ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 10.5.5.62 >> ~/.ssh/known_hosts
+      displayName: 'Setup SSH key'
+
+    - task: AzureCLI@2
+      displayName: 'Ansible dry run (check mode)'
+      inputs:
+        azureSubscription: 'your-service-connection-name' # Update with your service connection
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          cd workloads/rpi3b
+          ansible-playbook -i inventory.yml playbook.yml --check --diff
+
+    - task: AzureCLI@2
+      displayName: 'Run Ansible playbook'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      inputs:
+        azureSubscription: 'your-service-connection-name' # Update with your service connection
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          cd workloads/rpi3b
+          ansible-playbook -i inventory.yml playbook.yml
+
+    - script: |
+        rm -f ~/.ssh/id_rsa
+      displayName: 'Cleanup SSH key'
+      condition: always()
