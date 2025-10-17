@@ -37,23 +37,23 @@ stages:
         ansible-galaxy collection list
       displayName: 'Verify Ansible installation'
 
-    - task: DownloadSecureFile@1
-      name: ansibleSSHKey
-      displayName: 'Download SSH private key'
-      inputs:
-        secureFile: 'rpi3b-ssh-key'
+    # - task: DownloadSecureFile@1
+    #   name: ansibleSSHKey
+    #   displayName: 'Download SSH private key'
+    #   inputs:
+    #     secureFile: 'rpi3b-ssh-key'
 
-    - script: |
-        mkdir -p ~/.ssh
-        cp $(ansibleSSHKey.secureFilePath) ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 10.5.5.62 >> ~/.ssh/known_hosts
-      displayName: 'Setup SSH key'
+    # - script: |
+    #     mkdir -p ~/.ssh
+    #     cp $(ansibleSSHKey.secureFilePath) ~/.ssh/id_rsa
+    #     chmod 600 ~/.ssh/id_rsa
+    #     ssh-keyscan -H 10.5.5.62 >> ~/.ssh/known_hosts
+    #   displayName: 'Setup SSH key'
 
     - task: AzureCLI@2
       displayName: 'Ansible dry run (check mode)'
       inputs:
-        azureSubscription: 'your-service-connection-name' # Update with your service connection
+        azureSubscription: $(serviceConnection)
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -64,7 +64,7 @@ stages:
       displayName: 'Run Ansible playbook'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       inputs:
-        azureSubscription: 'your-service-connection-name' # Update with your service connection
+        azureSubscription: $(serviceConnection)
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
