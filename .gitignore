@@ -87,3 +87,6 @@ downloaded_iso_path
 
 # Any image files that are used as wallpapers or backgrounds
 *.jpg
+
+# Ignore Ansible virtual environment
+.ansible
