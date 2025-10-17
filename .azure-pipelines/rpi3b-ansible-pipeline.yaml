@@ -6,8 +6,7 @@ trigger:
     include:
       - workloads/rpi3b/*
 
-pool:
-  vmImage: 'ubuntu-latest'
+pool: pve-self-hosted-agents
 
 variables:
   pythonVersion: '3.9'
