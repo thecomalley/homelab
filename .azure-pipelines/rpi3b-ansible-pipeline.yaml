@@ -49,7 +49,7 @@ steps:
     scriptLocation: 'inlineScript'
     inlineScript: |
       cd workloads/rpi3b
-      ansible-playbook -i inventory.ini playbook.yml --check --diff
+      ansible-playbook -i inventory.yml playbook.yml --check --diff
 
 - task: AzureCLI@2
   displayName: 'Run Ansible playbook'
@@ -60,7 +60,7 @@ steps:
     scriptLocation: 'inlineScript'
     inlineScript: |
       cd workloads/rpi3b
-      ansible-playbook -i inventory.ini playbook.yml
+      ansible-playbook -i inventory.yml playbook.yml
 
 - script: |
     rm -f ~/.ssh/id_rsa
