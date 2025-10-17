@@ -1,5 +1,12 @@
 trigger: none
 
+schedules:
+- cron: '0 0 * * *'
+  displayName: Daily midnight build
+  branches:
+    include:
+    - main
+
 pool: pve-self-hosted-agents
 
 variables:
@@ -39,7 +46,27 @@ steps:
   name: ansibleSSHKey
   displayName: 'Download SSH private key'
   inputs:
-    secureFile: 'rpi3b-ssh-key'
+    secureFile: 'ansible-rpi3b'
+
+- script: |
+    echo "Setting up SSH key..."
+    mkdir -p ~/.ssh
+    cp $(ansibleSSHKey.secureFilePath) ~/.ssh/ansible-rpi3b
+    chmod 600 ~/.ssh/ansible-rpi3b
+    echo "SSH key permissions:"
+    ls -la ~/.ssh/ansible-rpi3b
+    echo ""
+    echo "Adding host to known_hosts..."
+    ssh-keyscan -H 10.5.5.61 >> ~/.ssh/known_hosts
+    echo "Testing SSH connection..."
+    ssh -i ~/.ssh/ansible-rpi3b -o ConnectTimeout=10 -o BatchMode=yes ansible@10.5.5.61 'echo "SSH connection successful"'
+  displayName: 'Setup SSH key and test connection'
+
+- script: |
+    cd workloads/rpi3b
+    echo "Testing Ansible ping..."
+    ansible all -i inventory.yml -m ping -vvv
+  displayName: 'Test Ansible connection'
 
 - task: AzureCLI@2
   displayName: 'Ansible dry run (check mode)'
@@ -63,6 +90,6 @@ steps:
       ansible-playbook -i inventory.yml playbook.yml
 
 - script: |
-    rm -f ~/.ssh/id_rsa
+    rm -f ~/.ssh/ansible-rpi3b
   displayName: 'Cleanup SSH key'
   condition: always()
