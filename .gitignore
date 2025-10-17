@@ -45,18 +45,14 @@ terraform.rc
 
 # Ansible Inventory files
 inventory.yml
+inventory.yaml
 inventory.ini
-
-!workloads/rpi3b/inventory.yml
 
 # Ignore .env files
 .env
 
 # DrawIO backup files
 *.drawio.bkp
-
-# Ignore Ansible Inventory
-inventory.yml
 
 # Ignore k3s ansible bootstrap repo
 clouds/onprem/k3s/k3s-ansible
@@ -92,3 +88,6 @@ downloaded_iso_path
 
 # Ignore Ansible virtual environment
 .ansible
+
+# Allow specific Inventory files
+!workloads/rpi3b/inventory.yml

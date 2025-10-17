@@ -1,0 +1,5 @@
+all:
+  hosts:
+    rpi3b:
+      ansible_host: 10.5.5.61
+      ansible_user: "ansible"
