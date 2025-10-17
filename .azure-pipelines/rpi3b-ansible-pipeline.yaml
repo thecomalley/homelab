@@ -31,7 +31,7 @@ steps:
 
 - script: |
     pipx install ansible==$(ansibleVersion)
-    pipx inject ansible community.docker azure-identity azure-keyvault-secrets
+    pipx inject ansible azure-identity azure-keyvault-secrets
     ansible-galaxy collection install community.docker
     ansible-galaxy collection install azure.azcollection
     ansible-galaxy install geerlingguy.docker
