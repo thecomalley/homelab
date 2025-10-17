@@ -11,7 +11,6 @@ pool: pve-self-hosted-agents
 
 variables:
   workingDirectory: $(System.DefaultWorkingDirectory)/workloads/rpi3b
-  ansibleVersion: '6.0.0'
   # Uncomment and set this in Azure DevOps variable groups for password auth
   # rpi_password: $(RPI_PASSWORD)
 
@@ -30,7 +29,7 @@ steps:
       ls -la
 
 - script: |
-    pipx install ansible==$(ansibleVersion)
+    pipx install ansible --force
     pipx inject ansible azure-identity azure-keyvault-secrets
     ansible-galaxy collection install community.docker
     ansible-galaxy collection install azure.azcollection
