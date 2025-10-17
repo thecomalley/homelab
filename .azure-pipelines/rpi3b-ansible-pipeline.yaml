@@ -39,7 +39,7 @@ steps:
   name: ansibleSSHKey
   displayName: 'Download SSH private key'
   inputs:
-    secureFile: 'ansible-rpi3b-key'
+    secureFile: 'rpi3b-ssh-key'
 
 - task: AzureCLI@2
   displayName: 'Ansible dry run (check mode)'
