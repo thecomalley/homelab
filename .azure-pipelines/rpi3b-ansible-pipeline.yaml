@@ -31,6 +31,7 @@ steps:
 - script: |
     pipx install ansible
     pipx ensurepath
+    ansible --version
   displayName: 'Install Dependencies'
 
 - script: |
