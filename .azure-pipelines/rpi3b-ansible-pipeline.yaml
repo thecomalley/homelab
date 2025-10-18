@@ -29,6 +29,11 @@ steps:
       ls -la
 
 - script: |
+    pipx install ansible
+    pipx ensurepath
+  displayName: 'Install Dependencies'
+
+- script: |
     pipx inject ansible azure-identity azure-keyvault-secrets
     ansible-galaxy collection install community.docker
     ansible-galaxy collection install azure.azcollection
