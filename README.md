@@ -6,6 +6,19 @@ Its very much a work in progress and i am constantly adding new services and inf
 
 Sometimes i'll do deep dives into specific services over on my blog [https://thecomalley.github.io](https://thecomalley.github.io/) but for the most part this is a place to document everything that is going on in my homelab.
 
+# Platforms
+- [Azure](./platforms/azure/README.md) 
+- [Proxmox](./platforms/proxmox/README.md)
+- [unRAID](./platforms/unraid/README.md)
+- k3s (Future Plans)
+
+# Workloads
+- [azure-pipeline-agents](./workloads/azure-pipeline-agents/README.md) - Self Hosted Azure DevOps Pipeline Agents running on Proxmox & in the ALZ
+- [Home-assistant](./workloads/home-assistant/README.md) - Azure components for Home Assistant
+- [rpi3b](./workloads/rpi3b/README.md) - A simple Docker stack that runs some ADS-B services on a Raspberry Pi 3B+
+- [swag](./workloads/swag/README.md) - Secure Web Access Gateway (SWAG) running on unRAID
+- [unraid-appdata-backup](./workloads/unraid-appdata-backup/README.md) - Backup unRAID appdata to Azure Blob Storage
+- [windows-server-lab](./workloads/windows-server-lab/README.md) - A Windows Server Lab running on Proxmox
 ---
 
 ### Clouds
