@@ -1,0 +1,7 @@
+---
+roles:
+  - name: geerlingguy.docker
+
+collections:
+  - name: azure.azcollection
+  - name: community.dockers

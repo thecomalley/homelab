@@ -11,36 +11,10 @@ pool: pve-self-hosted-agents
 
 variables:
   workingDirectory: $(System.DefaultWorkingDirectory)/workloads/rpi3b
-  # Uncomment and set this in Azure DevOps variable groups for password auth
-  # rpi_password: $(RPI_PASSWORD)
 
 steps:
 - checkout: self
   displayName: 'Checkout repository'
-
-- task: Bash@3
-  displayName: 'Debug'
-  inputs:
-    workingDirectory: '$(workingDirectory)'
-    targetType: 'inline'
-    script: |
-      echo "##[debug] Current working directory: $(pwd)"
-      echo "##[debug] Listing files:"
-      ls -la
-      ansible --version
-
-- script: |
-    pip install ansible azure-identity 
-    pip install azure-keyvault-secrets
-    ansible-galaxy collection install community.docker
-    ansible-galaxy collection install azure.azcollection
-    ansible-galaxy install geerlingguy.docker
-  displayName: 'Install Dependencies'
-
-- script: |
-    ansible --version
-    ansible-galaxy collection list
-  displayName: 'Verify Ansible installation'
 
 - task: DownloadSecureFile@1
   name: ansibleSSHKey
@@ -49,45 +23,29 @@ steps:
     secureFile: 'ansible-rpi3b'
 
 - script: |
-    echo "Setting up SSH key..."
     mkdir -p ~/.ssh
     cp $(ansibleSSHKey.secureFilePath) ~/.ssh/ansible-rpi3b
     chmod 600 ~/.ssh/ansible-rpi3b
-    echo "SSH key permissions:"
-    ls -la ~/.ssh/ansible-rpi3b
-    echo ""
-    echo "Adding host to known_hosts..."
-    ssh-keyscan -H 10.5.5.61 >> ~/.ssh/known_hosts
-    echo "Testing SSH connection..."
-    ssh -i ~/.ssh/ansible-rpi3b -o ConnectTimeout=10 -o BatchMode=yes ansible@10.5.5.61 'echo "SSH connection successful"'
-  displayName: 'Setup SSH key and test connection'
+  displayName: 'Setup SSH key'
 
 - script: |
-    cd workloads/rpi3b
-    echo "Testing Ansible ping..."
-    ansible all -i inventory.yml -m ping -vvv
-  displayName: 'Test Ansible connection'
-
-- task: AzureCLI@2
-  displayName: 'Ansible dry run (check mode)'
-  inputs:
-    azureSubscription: $(serviceConnection)
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      cd workloads/rpi3b
-      ansible-playbook -i inventory.yml playbook.yml --check --diff
+    ansible-galaxy install -r $(workingDirectory)/requirements.yml
+  displayName: 'Install Galaxy Requirements'
 
 - task: AzureCLI@2
   displayName: 'Run Ansible playbook'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   inputs:
+    workingDirectory: $(workingDirectory)
+    visibleAzLogin: false
     azureSubscription: $(serviceConnection)
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      cd workloads/rpi3b
       ansible-playbook -i inventory.yml playbook.yml
+  env:
+    ANSIBLE_HOST_KEY_CHECKING: 'False'
+    ANSIBLE_FORCE_COLOR: 'True'
 
 - script: |
     rm -f ~/.ssh/ansible-rpi3b

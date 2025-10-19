@@ -30,6 +30,57 @@
         state: present
       become: true
 
+    - name: Install Azure Python packages into system location
+      ansible.builtin.pip:
+        name:
+          - azure-identity
+          - azure-keyvault-secrets
+        extra_args: --target /usr/lib/python3/dist-packages --break-system-packages
+      become: true
+
+    - name: Install prerequisites for Azure CLI
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - apt-transport-https
+          - lsb-release
+          - gnupg
+        state: present
+      become: true
+
+    - name: Create directory for Azure CLI keyring
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Download and install Microsoft signing key
+      ansible.builtin.shell: |
+        curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null
+        chmod go+r /etc/apt/keyrings/microsoft.gpg
+      become: true
+      args:
+        creates: /etc/apt/keyrings/microsoft.gpg
+
+    - name: Add Azure CLI repository
+      ansible.builtin.apt_repository:
+        repo: 'deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main'
+        state: present
+      become: true
+
+    - name: Update package cache after adding Azure CLI repo
+      ansible.builtin.apt:
+        update_cache: true
+      become: true
+
+    - name: Install Azure CLI
+      ansible.builtin.apt:
+        name: azure-cli
+        state: present
+      become: true
+
     - name: Create user for agent
       ansible.builtin.user:
         name: '{{ az_agent_user }}'
@@ -113,6 +164,20 @@
         daemon_reload: true
       become: true
       when: service_file_check_escaped.files | length > 0
+
+    - name: Get the actual service name from installed service files
+      ansible.builtin.set_fact:
+        agent_service_name: "{{ service_file_check_escaped.files[0].path | basename | regex_replace('\\.service$', '') }}"
+      when: service_file_check_escaped.files | length > 0
+
+    - name: Reload systemd and restart agent service
+      become: true
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: '{{ agent_service_name }}'
+        state: restarted
+        enabled: true
+      when: agent_service_name is defined
 
     - name: Get the actual service name from installed service files
       ansible.builtin.set_fact:
