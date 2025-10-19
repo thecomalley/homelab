@@ -19,7 +19,7 @@ steps:
   displayName: 'Checkout repository'
 
 - task: Bash@3
-  displayName: 'Debug Working Directory'
+  displayName: 'Debug'
   inputs:
     workingDirectory: '$(workingDirectory)'
     targetType: 'inline'
@@ -27,15 +27,11 @@ steps:
       echo "##[debug] Current working directory: $(pwd)"
       echo "##[debug] Listing files:"
       ls -la
+      ansible --version
 
 - script: |
-    pipx install ansible
-    pipx ensurepath
-    ansible --version
-  displayName: 'Install Dependencies'
-
-- script: |
-    pipx inject ansible azure-identity azure-keyvault-secrets
+    pip install ansible azure-identity 
+    pip install azure-keyvault-secrets
     ansible-galaxy collection install community.docker
     ansible-galaxy collection install azure.azcollection
     ansible-galaxy install geerlingguy.docker

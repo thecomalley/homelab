@@ -11,11 +11,6 @@
     az_agent_directory: /opt/az-agent/
     az_agent_url: 'https://download.agent.dev.azure.com/agent/{{ az_agent_version }}/vsts-agent-linux-x64-{{ az_agent_version }}.tar.gz'
   tasks:
-    - name: Validate that PAT is provided
-      ansible.builtin.fail:
-        msg: 'Azure DevOps PAT must be provided via vault_az_agent_pat variable or AZ_AGENT_PAT environment variable'
-      when: az_agent_pat == ""
-
     - name: Update package cache
       ansible.builtin.apt:
         update_cache: true
@@ -30,7 +25,8 @@
           - wget
           - tar
           - libicu-dev
-          - pipx
+          - ansible
+          - python3-pip
         state: present
       become: true
 
@@ -64,6 +60,11 @@
       ansible.builtin.stat:
         path: '{{ az_agent_directory }}/.agent'
       register: agent_configured
+
+    - name: Validate that PAT is provided
+      ansible.builtin.fail:
+        msg: 'Azure DevOps PAT must be provided when configuring the agent.'
+      when: not agent_configured.stat.exists and az_agent_pat == ""
 
     - name: Configure agent
       ansible.builtin.shell: |
@@ -113,16 +114,16 @@
       become: true
       when: service_file_check_escaped.files | length > 0
 
-    - name: Verify agent service status
-      ansible.builtin.systemd:
-        name: '{{ service_file_check_escaped.files[0].path | basename }}'
-      register: agent_service_status
+    - name: Get the actual service name from installed service files
+      ansible.builtin.set_fact:
+        agent_service_name: "{{ service_file_check_escaped.files[0].path | basename | regex_replace('\\.service$', '') }}"
       when: service_file_check_escaped.files | length > 0
 
-    - name: Display agent status
-      ansible.builtin.debug:
-        msg:
-          - "Agent service: {{ service_file_check_escaped.files[0].path | basename if service_file_check_escaped.files | length > 0 else 'Not found' }}"
-          - "Status: {{ agent_service_status.status.ActiveState | default('Unknown') }}"
-          - "Enabled: {{ agent_service_status.status.UnitFileState | default('Unknown') }}"
-      when: service_file_check_escaped.files | length > 0
+    - name: Reload systemd and restart agent service
+      become: true
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: '{{ agent_service_name }}'
+        state: restarted
+        enabled: true
+      when: agent_service_name is defined
