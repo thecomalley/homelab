@@ -4,4 +4,4 @@ roles:
 
 collections:
   - name: azure.azcollection
-  - name: community.dockers
+  - name: community.docker
